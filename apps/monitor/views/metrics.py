@@ -13,11 +13,10 @@ class MetricsVieSet(viewsets.ViewSet):
         operation_id="metrics",
         operation_description="查询指标信息",
         manual_parameters=[
-            openapi.Parameter("query", openapi.IN_QUERY, description="指标查询参数", type=openapi.TYPE_STRING),
+            openapi.Parameter("query", openapi.IN_QUERY, description="指标查询参数", type=openapi.TYPE_STRING, required=True),
         ],
-        required=["query"]
     )
-    @action(methods=['get'], detail=False, url_path='metrics')
+    @action(methods=['get'], detail=False, url_path='query')
     def get_metrics(self, request):
         data = Metrics.get_metrics(request.GET.get('query'))
         return WebUtils.response_success(data)
@@ -26,14 +25,14 @@ class MetricsVieSet(viewsets.ViewSet):
         operation_id="metrics",
         operation_description="查询指标信息",
         manual_parameters=[
-            openapi.Parameter("query", openapi.IN_QUERY, description="指标查询参数", type=openapi.TYPE_STRING),
-            openapi.Parameter("start", openapi.IN_QUERY, description="开始时间", type=openapi.TYPE_STRING),
-            openapi.Parameter("end", openapi.IN_QUERY, description="结束时间", type=openapi.TYPE_STRING),
-            openapi.Parameter("step", openapi.IN_QUERY, description="指标采集间隔", type=openapi.TYPE_STRING),
+            openapi.Parameter("query", openapi.IN_QUERY, description="指标查询参数", type=openapi.TYPE_STRING, required=True),
+            openapi.Parameter("start", openapi.IN_QUERY, description="开始时间（utc时间戳）", type=openapi.TYPE_STRING, required=True),
+            openapi.Parameter("end", openapi.IN_QUERY, description="结束时间（utc时间戳）", type=openapi.TYPE_STRING, required=True),
+            openapi.Parameter("step", openapi.IN_QUERY, description="指标采集间隔（eg: 5s）", type=openapi.TYPE_STRING, required=True),
         ],
         required=["query"]
     )
-    @action(methods=['get'], detail=False, url_path='metrics_range')
+    @action(methods=['get'], detail=False, url_path='query_range')
     def get_metrics_range(self, request):
         data = Metrics.get_metrics_range(
             request.GET.get('query'),
