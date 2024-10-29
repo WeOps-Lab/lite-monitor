@@ -1,43 +1,154 @@
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
-from rest_framework.decorators import action
 
-from apps.core.utils.web_utils import WebUtils
-from apps.monitor.services.metrics import Metrics
+from apps.monitor.filters.metrics import MetricObjectFilter, MetricGroupFilter, MetricFilter
+from apps.monitor.serializers.metrics import MetricObjectSerializer, MetricGroupSerializer, MetricSerializer
+from apps.monitor.models.metrics import MetricObject, MetricGroup, Metric
+from config.drf.pagination import CustomPageNumberPagination
 
 
-class MetricsVieSet(viewsets.ViewSet):
-
-    @swagger_auto_schema(
-        operation_id="metrics",
-        operation_description="查询指标信息",
-        manual_parameters=[
-            openapi.Parameter("query", openapi.IN_QUERY, description="指标查询参数", type=openapi.TYPE_STRING, required=True),
-        ],
-    )
-    @action(methods=['get'], detail=False, url_path='query')
-    def get_metrics(self, request):
-        data = Metrics.get_metrics(request.GET.get('query'))
-        return WebUtils.response_success(data)
+class MetricObjectVieSet(viewsets.ModelViewSet):
+    queryset = MetricObject.objects.all()
+    serializer_class = MetricObjectSerializer
+    filterset_class = MetricObjectFilter
+    pagination_class = CustomPageNumberPagination
 
     @swagger_auto_schema(
-        operation_id="metrics",
-        operation_description="查询指标信息",
-        manual_parameters=[
-            openapi.Parameter("query", openapi.IN_QUERY, description="指标查询参数", type=openapi.TYPE_STRING, required=True),
-            openapi.Parameter("start", openapi.IN_QUERY, description="开始时间（utc时间戳）", type=openapi.TYPE_STRING, required=True),
-            openapi.Parameter("end", openapi.IN_QUERY, description="结束时间（utc时间戳）", type=openapi.TYPE_STRING, required=True),
-            openapi.Parameter("step", openapi.IN_QUERY, description="指标采集间隔（eg: 5s）", type=openapi.TYPE_STRING, required=True),
-        ],
-        required=["query"]
+        operation_id="metrics_object_list",
+        operation_description="指标列表",
     )
-    @action(methods=['get'], detail=False, url_path='query_range')
-    def get_metrics_range(self, request):
-        data = Metrics.get_metrics_range(
-            request.GET.get('query'),
-            request.GET.get('start'),
-            request.GET.get('end'),
-            request.GET.get('step'),
-        )
-        return WebUtils.response_success(data)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_object_create",
+        operation_description="创建指标",
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_object_update",
+        operation_description="更新指标",
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_object_partial_update",
+        operation_description="部分更新指标",
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_object_retrieve",
+        operation_description="查询指标",
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_object_del",
+        operation_description="删除指标",
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
+
+class MetricGroupVieSet(viewsets.ModelViewSet):
+    queryset = MetricGroup.objects.all()
+    serializer_class = MetricGroupSerializer
+    filterset_class = MetricGroupFilter
+    pagination_class = CustomPageNumberPagination
+
+    @swagger_auto_schema(
+        operation_id="metrics_group_list",
+        operation_description="指标分组列表",
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_group_create",
+        operation_description="创建指标分组",
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_group_update",
+        operation_description="更新指标分组",
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_group_partial_update",
+        operation_description="部分更新指标分组",
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_group_retrieve",
+        operation_description="查询指标分组",
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_group_del",
+        operation_description="删除指标分组",
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
+
+class MetricVieSet(viewsets.ModelViewSet):
+    queryset = Metric.objects.all()
+    serializer_class = MetricSerializer
+    filterset_class = MetricFilter
+    pagination_class = CustomPageNumberPagination
+
+    @swagger_auto_schema(
+        operation_id="metrics_list",
+        operation_description="指标列表",
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_create",
+        operation_description="创建指标",
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_update",
+        operation_description="更新指标",
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_partial_update",
+        operation_description="部分更新指标",
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_retrieve",
+        operation_description="查询指标",
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_del",
+        operation_description="删除指标",
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
