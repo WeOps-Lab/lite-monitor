@@ -1,12 +1,6 @@
 from rest_framework import serializers
 
-from apps.monitor.models.metrics import MetricObject, MetricGroup, Metric
-
-
-class MetricObjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MetricObject
-        fields = '__all__'
+from apps.monitor.models.monitor_metrics import MetricGroup, Metric
 
 
 class MetricGroupSerializer(serializers.ModelSerializer):

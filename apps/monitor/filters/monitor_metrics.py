@@ -1,15 +1,6 @@
 from django_filters import CharFilter, FilterSet
 
-from apps.monitor.models.metrics import MetricObject, MetricGroup, Metric
-
-
-class MetricObjectFilter(FilterSet):
-    name = CharFilter(field_name="name", lookup_expr="icontains", label="指标对象名称")
-    type = CharFilter(field_name="type", lookup_expr="exact", label="指标对象类型")
-
-    class Meta:
-        model = MetricObject
-        fields = ["name", "type"]
+from apps.monitor.models.monitor_metrics import MetricGroup, Metric
 
 
 class MetricGroupFilter(FilterSet):
