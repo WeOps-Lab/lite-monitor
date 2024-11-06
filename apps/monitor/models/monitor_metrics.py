@@ -6,7 +6,7 @@ from apps.monitor.models.monitor_object import MonitorObject
 
 
 class MetricGroup(TimeInfo, MaintainerInfo):
-    metric_object = models.ForeignKey(MonitorObject, on_delete=models.CASCADE, verbose_name='指标对象')
+    monitor_object = models.ForeignKey(MonitorObject, on_delete=models.CASCADE, verbose_name='指标对象')
     name = models.CharField(max_length=100, verbose_name='指标分组名称')
     description = models.TextField(blank=True, null=True, verbose_name='指标分组描述')
 
@@ -16,7 +16,7 @@ class MetricGroup(TimeInfo, MaintainerInfo):
 
 
 class Metric(TimeInfo, MaintainerInfo):
-    metric_object = models.ForeignKey(MonitorObject, on_delete=models.CASCADE, verbose_name='指标对象')
+    monitor_object = models.ForeignKey(MonitorObject, on_delete=models.CASCADE, verbose_name='指标对象')
     metric_group = models.ForeignKey(MetricGroup, on_delete=models.CASCADE, verbose_name='指标分组')
     name = models.CharField(max_length=100, verbose_name="指标名称")
     type = models.CharField(max_length=50, verbose_name='指标类型')
@@ -24,6 +24,6 @@ class Metric(TimeInfo, MaintainerInfo):
     dimensions = models.JSONField(default=list, verbose_name='维度')
 
     class Meta:
-        unique_together = ('metric_object', 'name')
+        unique_together = ('monitor_object', 'name')
         verbose_name = '指标'
         verbose_name_plural = '指标'

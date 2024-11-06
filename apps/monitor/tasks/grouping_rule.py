@@ -4,15 +4,8 @@ from celery import shared_task
 
 from apps.monitor.models.monitor_object import MonitorInstanceGroupingRule, MonitorInstance
 from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
-from common.celery import app
 
 logger = logging.getLogger("app")
-
-# 通过信号连接，确保定时任务设置
-@app.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs):
-    # 每十分钟执行一次
-    sender.add_periodic_task(60.0 * 10, update_grouping_rule.s(), name='update_grouping_rule')
 
 
 @shared_task

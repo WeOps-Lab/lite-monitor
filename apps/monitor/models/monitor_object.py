@@ -7,6 +7,7 @@ from apps.core.models.time_info import TimeInfo
 class MonitorObject(TimeInfo, MaintainerInfo):
     name = models.CharField(unique=True, max_length=100, verbose_name='监控对象')
     type = models.CharField(max_length=50, verbose_name='监控对象类型')
+    description = models.TextField(blank=True, verbose_name='监控对象描述')
 
     class Meta:
         verbose_name = '监控对象'
