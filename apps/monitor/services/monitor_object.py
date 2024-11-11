@@ -1,3 +1,5 @@
+from django.db.models.expressions import result
+
 from apps.core.utils.keycloak_client import KeyCloakClient
 from apps.monitor.constants import MONITOR_OBJS
 from apps.monitor.models.monitor_metrics import MetricGroup, Metric
@@ -7,24 +9,54 @@ from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
 
 
 class MonitorObjectService:
+
+    @staticmethod
+    def get_object_instances(monitor_object_id):
+        # todo default_metric_map 后续需要从数据库中获取
+        default_metric_map = {i["name"]: i["default_metric"] for i in MONITOR_OBJS}
+        monitor_obj = MonitorObject.objects.filter(id=monitor_object_id).first()
+        metrics = VictoriaMetricsAPI().query(default_metric_map[monitor_obj.name])
+        instance_map = {
+            metric_info["metric"]["instance_id"]: metric_info["metric"]["agent_id"]
+            for metric_info in metrics.get("data", {}).get("result", []) if
+            metric_info.get("metric", {}).get("instance_id")
+        }
+        return instance_map
+
     @staticmethod
     def get_monitor_instance(monitor_object_id, token):
         """获取监控对象实例"""
         keycloak_client = KeyCloakClient()
         roles = keycloak_client.get_roles(token)
+        instance_map = MonitorObjectService.get_object_instances(monitor_object_id)
+        result = []
         if "admin" in roles:
-            # todo default_metric_map 后续需要从数据库中获取
-            default_metric_map = {i["name"]: i["default_metric"] for i in MONITOR_OBJS}
-            obj = MonitorObject.objects.filter(id=monitor_object_id).first()
-            metrics = VictoriaMetricsAPI().query(default_metric_map[obj.name])
-            instance_set = {
-                metric_info["metric"]["instance_id"]
-                for metric_info in metrics.get("result", []) if metric_info.get("metric", {}).get("instance_id")
-            }
-            return list(instance_set)
-        user_group_and_subgroup_ids = Group(token).get_user_group_and_subgroup_ids()
-        objs = MonitorInstance.objects.filter(monitor_object_id=monitor_object_id, organization__in=user_group_and_subgroup_ids)
-        return [i.instance_id for i in objs]
+            objs = MonitorInstance.objects.filter(monitor_object_id=monitor_object_id)
+            obj_map = {}
+            for obj in objs:
+                if obj.instance_id not in obj_map:
+                    obj_map[obj.instance_id] = {"organization":set(), "time":set()}
+                obj_map[obj.instance_id]["organization"].add(obj.organization)
+                obj_map[obj.instance_id]["time"].add(obj.updated_at)
+            for instance_id, agent_id in instance_map.items():
+                result.append({
+                    "instance_id": instance_id,
+                    "agent_id": agent_id,
+                    "organization": obj_map.get(instance_id, {}).get("organization", []),
+                    "time": max(obj_map[instance_id]["time"]) if obj_map.get(instance_id, {}).get("time", []) else "",
+                })
+            return result
+        else:
+            user_group_and_subgroup_ids = Group(token).get_user_group_and_subgroup_ids()
+            objs = MonitorInstance.objects.filter(monitor_object_id=monitor_object_id, organization__in=user_group_and_subgroup_ids)
+            for obj in objs:
+                result.append({
+                    "instance_id": obj.instance_id,
+                    "agent_id": instance_map.get(obj.instance_id, ""),
+                    "organization": obj.organization,
+                    "time": obj.updated_at,
+                })
+            return result
 
     @staticmethod
     def import_monitor_object(data: dict):

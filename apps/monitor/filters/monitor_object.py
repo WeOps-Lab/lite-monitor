@@ -13,8 +13,10 @@ class MonitorObjectFilter(FilterSet):
 
 
 class MonitorInstanceGroupingRuleFilter(FilterSet):
+    monitor_object_id = CharFilter(field_name="monitor_object_id", lookup_expr="exact", label="监控对象id")
     name = CharFilter(field_name="name", lookup_expr="icontains", label="分组规则名称")
+
 
     class Meta:
         model = MonitorInstanceGroupingRule
-        fields = ["name"]
+        fields = ["monitor_object_id", "name"]
