@@ -16,11 +16,20 @@ class MonitorObjectService:
         default_metric_map = {i["name"]: i["default_metric"] for i in MONITOR_OBJS}
         monitor_obj = MonitorObject.objects.filter(id=monitor_object_id).first()
         metrics = VictoriaMetricsAPI().query(default_metric_map[monitor_obj.name])
-        instance_map = {
-            metric_info["metric"]["instance_id"]: metric_info["metric"]["agent_id"]
-            for metric_info in metrics.get("data", {}).get("result", []) if
-            metric_info.get("metric", {}).get("instance_id")
-        }
+        instance_map = {}
+        for metric_info in metrics.get("data", {}).get("result", []):
+            instance_id = metric_info.get("metric", {}).get("instance_id")
+            if not instance_id:
+                continue
+            agent_id = metric_info.get("metric", {}).get("agent_id")
+            _time = metric_info["value"][0]
+
+            if instance_id not in instance_map:
+                instance_map[instance_id] = {"instance_id": instance_id, "agent_id": agent_id, "time": _time}
+            else:
+                if _time > instance_map[instance_id]["time"]:
+                    instance_map[instance_id] = {"instance_id": instance_id, "agent_id": agent_id, "time": _time}
+
         return instance_map
 
     @staticmethod
@@ -38,12 +47,12 @@ class MonitorObjectService:
                     obj_map[obj.instance_id] = {"organization":set(), "time":set()}
                 obj_map[obj.instance_id]["organization"].add(obj.organization)
                 obj_map[obj.instance_id]["time"].add(obj.updated_at)
-            for instance_id, agent_id in instance_map.items():
+            for instance_info in instance_map.values():
                 result.append({
-                    "instance_id": instance_id,
-                    "agent_id": agent_id,
-                    "organization": obj_map.get(instance_id, {}).get("organization", []),
-                    "time": max(obj_map[instance_id]["time"]) if obj_map.get(instance_id, {}).get("time", []) else "",
+                    "instance_id": instance_info["instance_id"],
+                    "agent_id": instance_info["agent_id"],
+                    "organization": obj_map.get(instance_info["instance_id"], {}).get("organization", []),
+                    "time": instance_info["time"],
                 })
             return result
         else:
@@ -52,9 +61,9 @@ class MonitorObjectService:
             for obj in objs:
                 result.append({
                     "instance_id": obj.instance_id,
-                    "agent_id": instance_map.get(obj.instance_id, ""),
+                    "agent_id": instance_map.get(obj.instance_id, {}).get("agent_id", ""),
                     "organization": obj.organization,
-                    "time": obj.updated_at,
+                    "time": instance_map.get(obj.instance_id, {}).get("time", ""),
                 })
             return result
 
