@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 
 from apps.core.utils.web_utils import WebUtils
 from apps.monitor.filters.monitor_object import MonitorObjectFilter, MonitorInstanceGroupingRuleFilter
-from apps.monitor.models.monitor_object import MonitorObject, MonitorInstanceGroupingRule, MonitorInstance
+from apps.monitor.models.monitor_object import MonitorObject, MonitorInstanceGroupingRule
 from apps.monitor.serializers.monitor_object import MonitorObjectSerializer, MonitorInstanceGroupingRuleSerializer
 from apps.monitor.services.monitor_object import MonitorObjectService
 from config.default import AUTH_TOKEN_HEADER_NAME
@@ -127,15 +127,39 @@ class MonitorInstanceGroupingRuleVieSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
+class MonitorInstanceVieSet(viewsets.ViewSet):
+
     @swagger_auto_schema(
         operation_id="monitor_instance_list",
         operation_description="监控实例列表",
         manual_parameters=[openapi.Parameter("monitor_object_id", openapi.IN_PATH, description="指标查询参数", type=openapi.TYPE_INTEGER, required=True)],
     )
-    @action(methods=['get'], detail=False, url_path='monitor_object_instances/(?P<monitor_object_id>[^/.]+)')
+    @action(methods=['get'], detail=False, url_path='(?P<monitor_object_id>[^/.]+)/list')
     def monitor_instance_list(self, request, monitor_object_id):
         inst_list = MonitorObjectService.get_monitor_instance(
             int(monitor_object_id),
             request.META.get(AUTH_TOKEN_HEADER_NAME).split("Bearer ")[-1],
         )
         return WebUtils.response_success(inst_list)
+
+    @swagger_auto_schema(
+        operation_id="generate_monitor_instance_id",
+        operation_description="生成监控实例ID",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "monitor_instance_name": openapi.Schema(type=openapi.TYPE_STRING, description="监控实例名称"),
+                "interval": openapi.Schema(type=openapi.TYPE_INTEGER, description="监控实例采集间隔(s)"),
+            },
+            required=["monitor_instance_name", "interval"]
+        )
+
+    )
+    @action(methods=['post'], detail=False, url_path='(?P<monitor_object_id>[^/.]+)/generate_instance_id')
+    def generate_monitor_instance_id(self, request, monitor_object_id):
+        result = MonitorObjectService.generate_monitor_instance_id(
+            int(monitor_object_id),
+            request.data["monitor_instance_name"],
+            request.data["interval"],
+        )
+        return WebUtils.response_success(result)

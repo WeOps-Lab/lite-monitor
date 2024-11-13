@@ -1,9 +1,12 @@
+import uuid
+
+from django.db.models import Prefetch
 from django.db.models.expressions import result
 
 from apps.core.utils.keycloak_client import KeyCloakClient
 from apps.monitor.constants import MONITOR_OBJS
 from apps.monitor.models.monitor_metrics import MetricGroup, Metric
-from apps.monitor.models.monitor_object import MonitorInstance, MonitorObject
+from apps.monitor.models.monitor_object import MonitorInstance, MonitorObject, MonitorInstanceOrganization
 from apps.core.utils.user_group import Group
 from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
 
@@ -40,32 +43,54 @@ class MonitorObjectService:
         instance_map = MonitorObjectService.get_object_instances(monitor_object_id)
         result = []
         if "admin" in roles:
-            objs = MonitorInstance.objects.filter(monitor_object_id=monitor_object_id)
-            obj_map = {}
-            for obj in objs:
-                if obj.instance_id not in obj_map:
-                    obj_map[obj.instance_id] = {"organization":set(), "time":set()}
-                obj_map[obj.instance_id]["organization"].add(obj.organization)
-                obj_map[obj.instance_id]["time"].add(obj.updated_at)
+            objs = MonitorInstance.objects.prefetch_related(
+                Prefetch('monitorinstanceorganization_set', to_attr='organizations')
+            )
+
+            obj_map = {i.id: i.organizations for i in objs}
+
             for instance_info in instance_map.values():
                 result.append({
                     "instance_id": instance_info["instance_id"],
                     "agent_id": instance_info["agent_id"],
-                    "organization": obj_map.get(instance_info["instance_id"], {}).get("organization", []),
+                    "organization": obj_map.get(instance_info["instance_id"], []),
                     "time": instance_info["time"],
                 })
             return result
         else:
             user_group_and_subgroup_ids = Group(token).get_user_group_and_subgroup_ids()
-            objs = MonitorInstance.objects.filter(monitor_object_id=monitor_object_id, organization__in=user_group_and_subgroup_ids)
+            # 根据监控对象和用户组获取监控对象实例
+            objs = MonitorInstance.objects.filter(
+                monitor_object_id=monitor_object_id,
+                monitorinstanceorganization__organization__in=user_group_and_subgroup_ids
+            ).prefetch_related(
+                Prefetch('monitorinstanceorganization_set', to_attr='organizations')
+            )
+
             for obj in objs:
                 result.append({
-                    "instance_id": obj.instance_id,
-                    "agent_id": instance_map.get(obj.instance_id, {}).get("agent_id", ""),
-                    "organization": obj.organization,
-                    "time": instance_map.get(obj.instance_id, {}).get("time", ""),
+                    "instance_id": obj.id,
+                    "agent_id": instance_map.get(obj.id, {}).get("agent_id", ""),
+                    "organization": obj.organizations,
+                    "time": instance_map.get(obj.id, {}).get("time", ""),
                 })
             return result
+
+    @staticmethod
+    def generate_monitor_instance_id(monitor_object_id, monitor_instance_name, interval):
+        """生成监控对象实例ID"""
+        obj = MonitorInstance.objects.filter(monitor_object_id=monitor_object_id, name=monitor_instance_name).first()
+        if obj:
+            obj.interval = interval
+            obj.save()
+            return obj.id
+        else:
+            # 生成一个uui
+            instance_id = uuid.uuid4().hex
+            MonitorInstance.objects.create(
+                id=instance_id, name=monitor_instance_name, interval=interval, monitor_object_id=monitor_object_id)
+
+            return instance_id
 
     @staticmethod
     def import_monitor_object(data: dict):

@@ -2,7 +2,7 @@ import logging
 
 from celery import shared_task
 
-from apps.monitor.models.monitor_object import MonitorInstanceGroupingRule, MonitorInstance
+from apps.monitor.models.monitor_object import MonitorInstanceGroupingRule, MonitorInstanceOrganization
 from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
 
 logger = logging.getLogger("app")
@@ -48,19 +48,22 @@ class RuleGrouping:
             else:
                 continue
             for instance_id, organization in asso_list:
-                monitor_inst_asso_set.add((rule.monitor_object_id, instance_id, organization))
+                monitor_inst_asso_set.add((instance_id, organization))
 
-        exist_instance_map = {(i.monitor_object_id, i.instance_id, i.organization): i.id for i in MonitorInstance.objects.all()}
+        # todo 过滤掉不存在的实例
+
+        exist_instance_map = {(i.monitor_instance_id, i.organization): i.id for i in MonitorInstanceOrganization.objects.all()}
         create_asso_set = monitor_inst_asso_set - set(exist_instance_map.keys())
         delete_asso_set = set(exist_instance_map.keys()) - monitor_inst_asso_set
 
-        create_objs = [
-            MonitorInstance(monitor_object_id=asso_tuple[0], instance_id=asso_tuple[1], organization=asso_tuple[2])
-            for asso_tuple in create_asso_set
-        ]
-        if create_objs:
-            MonitorInstance.objects.bulk_create(create_objs, batch_size=200)
+
+        if create_asso_set:
+            create_objs = [
+                MonitorInstanceOrganization(monitor_instance_id=asso_tuple[0], organization=asso_tuple[1])
+                for asso_tuple in create_asso_set
+            ]
+            MonitorInstanceOrganization.objects.bulk_create(create_objs, batch_size=200)
 
         if delete_asso_set:
             delete_ids = [exist_instance_map[asso_tuple] for asso_tuple in delete_asso_set]
-            MonitorInstance.objects.filter(id__in=delete_ids).delete()
+            MonitorInstanceOrganization.objects.filter(id__in=delete_ids).delete()

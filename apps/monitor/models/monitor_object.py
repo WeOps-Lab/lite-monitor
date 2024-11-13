@@ -15,14 +15,27 @@ class MonitorObject(TimeInfo, MaintainerInfo):
 
 
 class MonitorInstance(TimeInfo, MaintainerInfo):
+    id = models.CharField(primary_key=True, max_length=100, verbose_name='监控对象实例ID')
+    name = models.CharField(db_index=True, max_length=100, default="", verbose_name='监控对象实例名称')
+    interval = models.IntegerField(default=10, verbose_name='监控实例采集间隔(s)')
+    agent_id = models.CharField(max_length=100, default="", verbose_name='Agent ID')
     monitor_object = models.ForeignKey(MonitorObject, on_delete=models.CASCADE, verbose_name='监控对象')
-    instance_id = models.CharField(db_index=True, max_length=100, verbose_name='监控对象实例id')
-    organization = models.CharField(db_index=True, max_length=100, verbose_name='组织id')
+    auto = models.BooleanField(default=False, verbose_name='是否自动创建')
 
     class Meta:
         verbose_name = '监控对象实例'
         verbose_name_plural = '监控对象实例'
-        unique_together = ('monitor_object', 'instance_id', 'organization')
+        unique_together = ('monitor_object', 'name')
+
+
+class MonitorInstanceOrganization(TimeInfo, MaintainerInfo):
+    monitor_instance = models.ForeignKey(MonitorInstance, on_delete=models.CASCADE, verbose_name='监控对象实例')
+    organization = models.CharField(max_length=100, verbose_name='组织id')
+
+    class Meta:
+        verbose_name = '监控对象实例组织'
+        verbose_name_plural = '监控对象实例组织'
+        unique_together = ('monitor_instance', 'organization')
 
 
 class MonitorInstanceGroupingRule(TimeInfo, MaintainerInfo):
