@@ -20,5 +20,4 @@ ENV DEBUG False
 ENV DB_ENGINE  django.db.backends.sqlite3
 ENV DB_NAME weops-next
 
-
 CMD [ "supervisord","-n" ]
