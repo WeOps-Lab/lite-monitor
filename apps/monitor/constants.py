@@ -11,3 +11,22 @@ MONITOR_OBJS = [
     {"type": "Web", "name": "Website", "default_metric": "probe_duration_seconds_gauge"},
     {"type": "K8S", "name": "K8S", "default_metric": "internal_write_write_time_ns"},
 ]
+
+# 监控策略的计算方法
+POLICY_METHODS = {
+    "sum": sum,
+    "avg": lambda x: sum(x) / len(x),
+    "max": max,
+    "min": min,
+    "count": len,
+}
+
+# 阀值对比方法
+THRESHOLD_METHODS = {
+    ">": lambda x, y: x > y,
+    "<": lambda x, y: x < y,
+    "=": lambda x, y: x == y,
+    "!=": lambda x, y: x != y,
+    ">=": lambda x, y: x >= y,
+    "<=": lambda x, y: x <= y,
+}

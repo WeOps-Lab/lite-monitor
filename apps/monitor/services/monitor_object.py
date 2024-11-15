@@ -1,7 +1,6 @@
 import uuid
 
 from django.db.models import Prefetch
-from django.db.models.expressions import result
 
 from apps.core.utils.keycloak_client import KeyCloakClient
 from apps.monitor.constants import MONITOR_OBJS
@@ -14,11 +13,9 @@ from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
 class MonitorObjectService:
 
     @staticmethod
-    def get_object_instances(monitor_object_id):
-        # todo default_metric_map 后续需要从数据库中获取
-        default_metric_map = {i["name"]: i["default_metric"] for i in MONITOR_OBJS}
-        monitor_obj = MonitorObject.objects.filter(id=monitor_object_id).first()
-        metrics = VictoriaMetricsAPI().query(default_metric_map[monitor_obj.name])
+    def get_instances_by_metric(metric: str):
+        """获取监控对象实例"""
+        metrics = VictoriaMetricsAPI().query(metric)
         instance_map = {}
         for metric_info in metrics.get("data", {}).get("result", []):
             instance_id = metric_info.get("metric", {}).get("instance_id")
@@ -34,6 +31,13 @@ class MonitorObjectService:
                     instance_map[instance_id] = {"instance_id": instance_id, "agent_id": agent_id, "time": _time}
 
         return instance_map
+
+    @staticmethod
+    def get_object_instances(monitor_object_id):
+        # todo default_metric_map 后续需要从数据库中获取
+        default_metric_map = {i["name"]: i["default_metric"] for i in MONITOR_OBJS}
+        monitor_obj = MonitorObject.objects.filter(id=monitor_object_id).first()
+        return MonitorObjectService.get_instances_by_metric(default_metric_map[monitor_obj.name])
 
     @staticmethod
     def get_monitor_instance(monitor_object_id, token):
@@ -177,3 +181,32 @@ class MonitorObjectService:
             ]
         }
         return data
+
+    @staticmethod
+    def autodiscover_monitor_instance():
+        """同步监控实例数据"""
+        objs = MonitorInstance.objects.all()
+        exist_instance_id = {i.id: i.auto for i in objs}
+
+        monitor_objs = MonitorObject.objects.all()
+        default_metric_map = {i["name"]: i["default_metric"] for i in MONITOR_OBJS}
+        create_list, delete_list = [], []
+        for monitor_obj in monitor_objs:
+            metric = default_metric_map[monitor_obj.name]
+            instance_map = MonitorObjectService.get_instances_by_metric(metric)
+            for instance_id in instance_map.keys():
+                if instance_id not in exist_instance_id:
+                    create_list.append(
+                        MonitorInstance(
+                            id=instance_id, name=instance_id, monitor_object=monitor_obj, interval=60, auto=True
+                        )
+                    )
+                    exist_instance_id[instance_id] = True
+                else:
+                    # 删除不存在的实例
+                    if exist_instance_id.get(instance_id) is True:
+                        delete_list.append(instance_id)
+        if create_list:
+            MonitorInstance.objects.bulk_create(create_list, batch_size=200)
+        if delete_list:
+            MonitorInstance.objects.filter(id__in=delete_list).delete()

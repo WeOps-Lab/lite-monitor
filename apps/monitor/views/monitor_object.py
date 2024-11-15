@@ -163,3 +163,12 @@ class MonitorInstanceVieSet(viewsets.ViewSet):
             request.data["interval"],
         )
         return WebUtils.response_success(result)
+
+    @swagger_auto_schema(
+        operation_id="autodiscover_monitor_instance",
+        operation_description="自动发现监控实例",
+    )
+    @action(methods=['get'], detail=False, url_path='autodiscover_monitor_instance')
+    def autodiscover_monitor_instance(self, request):
+        MonitorObjectService.autodiscover_monitor_instance()
+        return WebUtils.response_success()
