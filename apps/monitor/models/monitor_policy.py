@@ -38,7 +38,7 @@ class MonitorAlert(TimeInfo):
 
     policy = models.ForeignKey(MonitorPolicy, on_delete=models.CASCADE, verbose_name='监控策略')
     monitor_instance = models.ForeignKey(MonitorInstance, on_delete=models.CASCADE, verbose_name='监控实例')
-    status = models.CharField(max_length=20, default="new", choices=STATUS_CHOICES, verbose_name='告警状态')
+    status = models.CharField(db_index=True, max_length=20, default="new", choices=STATUS_CHOICES, verbose_name='告警状态')
     operator = models.CharField(max_length=50, verbose_name='操作人')
 
     class Meta:
@@ -47,7 +47,7 @@ class MonitorAlert(TimeInfo):
 
 
 class MonitorEvent(models.Model):
-    LEVEL_CHOICES = [('info', 'Info'), ('warning', 'Warning'), ('error', 'Error')]
+    LEVEL_CHOICES = [('info', 'Info'), ('warning', 'Warning'), ('error', 'Error'), ('critical', 'Critical')]
 
     monitor_alert = models.ForeignKey(MonitorAlert, on_delete=models.CASCADE, verbose_name='事件所属的告警')
     created_at = models.DateTimeField(db_index=True, auto_now_add=True, verbose_name="事件生成时间" )
