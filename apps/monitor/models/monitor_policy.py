@@ -16,7 +16,7 @@ class MonitorPolicy(TimeInfo, MaintainerInfo):
     name = models.CharField(max_length=100, verbose_name='监控策略名称')
     organizations = models.JSONField(default=list, verbose_name='所属组织')
     source = models.JSONField(default=dict, verbose_name="策略适用的资源")
-    frequency = models.IntegerField(verbose_name="监控检测频率(秒)")
+    schedule = models.JSONField(default=dict, verbose_name="策略执行周期(crontab格式)")
     period = models.IntegerField(verbose_name="每次监控检测的数据周期(秒)")
     algorithm = models.CharField(max_length=10, choices=ALGORITHM_CHOICES, verbose_name="聚合算法")
     threshold = models.JSONField(default=list, verbose_name="阈值")

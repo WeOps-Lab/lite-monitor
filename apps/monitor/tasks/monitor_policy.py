@@ -12,12 +12,11 @@ logger = logging.getLogger("app")
 
 
 @shared_task
-def scan_policy():
+def scan_policy_task(policy_id):
     """扫描监控策略"""
     logger.info("start to update monitor instance grouping rule")
-    policy_objs = MonitorPolicy.objects.all()
-    for policy in policy_objs:
-        MonitorPolicyScan(policy).run()
+    policy_obj = MonitorPolicy.objects.get(id=policy_id)
+    MonitorPolicyScan(policy_obj).run()
     logger.info("finish to update monitor instance grouping rule")
 
 
@@ -48,7 +47,7 @@ class MonitorPolicyScan:
         """查询指标"""
         step = int(self.policy.period / 10)
         end_timestamp = int(datetime.now(timezone.utc).timestamp())
-        start_timestamp = end_timestamp - self.policy.frequency
+        start_timestamp = end_timestamp - self.policy.period
         query = self.policy.query
         instances_str = "|".join(self.instances)
         query.replace("__labels__", f"instance_id=~'{instances_str}'")

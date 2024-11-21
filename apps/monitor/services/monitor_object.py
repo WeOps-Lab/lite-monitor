@@ -51,13 +51,13 @@ class MonitorObjectService:
                 Prefetch('monitorinstanceorganization_set', to_attr='organizations')
             )
 
-            obj_map = {i.id: i.organizations for i in objs}
+            inst_organizations_map = {i.id: [j.organization for j in i.organizations] for i in objs}
 
             for instance_info in instance_map.values():
                 result.append({
                     "instance_id": instance_info["instance_id"],
                     "agent_id": instance_info["agent_id"],
-                    "organization": obj_map.get(instance_info["instance_id"], []),
+                    "organization": inst_organizations_map.get(instance_info["instance_id"], []),
                     "time": instance_info["time"],
                 })
             return result
@@ -75,7 +75,7 @@ class MonitorObjectService:
                 result.append({
                     "instance_id": obj.id,
                     "agent_id": instance_map.get(obj.id, {}).get("agent_id", ""),
-                    "organization": obj.organizations,
+                    "organization": [i.organization for i in obj.organizations],
                     "time": instance_map.get(obj.id, {}).get("time", ""),
                 })
             return result
