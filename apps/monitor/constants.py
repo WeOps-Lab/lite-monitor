@@ -9,7 +9,7 @@ VICTORIAMETRICS_PWD = os.getenv("VICTORIAMETRICS_PWD")
 MONITOR_OBJS = [
     {"type": "OS", "name": "Host", "default_metric": 'node_load1_gauge{instance_type="os"}'},
     {"type": "Web", "name": "Website", "default_metric": "probe_duration_seconds_gauge"},
-    {"type": "K8S", "name": "K8S", "default_metric": "internal_write_write_time_ns"},
+    {"type": "K8S", "name": "K8S", "default_metric": 'internal_write_write_time_ns{instance_type="k8s"}'},
 ]
 
 # 监控策略的计算方法
