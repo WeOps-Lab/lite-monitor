@@ -46,24 +46,12 @@ class MonitorObjectService:
         roles = keycloak_client.get_roles(token)
         instance_map = MonitorObjectService.get_object_instances(monitor_object_id)
         result = []
+
         if "admin" in roles:
-            objs = MonitorInstance.objects.prefetch_related(
-                Prefetch('monitorinstanceorganization_set', to_attr='organizations')
-            )
-
-            inst_organizations_map = {i.id: [j.organization for j in i.organizations] for i in objs}
-
-            for instance_info in instance_map.values():
-                result.append({
-                    "instance_id": instance_info["instance_id"],
-                    "agent_id": instance_info["agent_id"],
-                    "organization": inst_organizations_map.get(instance_info["instance_id"], []),
-                    "time": instance_info["time"],
-                })
-            return result
+            objs = MonitorInstance.objects.filter(monitor_object_id=monitor_object_id,).prefetch_related(
+                Prefetch('monitorinstanceorganization_set', to_attr='organizations'))
         else:
             user_group_and_subgroup_ids = Group(token).get_user_group_and_subgroup_ids()
-            # 根据监控对象和用户组获取监控对象实例
             objs = MonitorInstance.objects.filter(
                 monitor_object_id=monitor_object_id,
                 monitorinstanceorganization__organization__in=user_group_and_subgroup_ids
@@ -71,14 +59,15 @@ class MonitorObjectService:
                 Prefetch('monitorinstanceorganization_set', to_attr='organizations')
             )
 
-            for obj in objs:
-                result.append({
-                    "instance_id": obj.id,
-                    "agent_id": instance_map.get(obj.id, {}).get("agent_id", ""),
-                    "organization": [i.organization for i in obj.organizations],
-                    "time": instance_map.get(obj.id, {}).get("time", ""),
-                })
-            return result
+        for obj in objs:
+            result.append({
+                "instance_id": obj.id,
+                "agent_id": instance_map.get(obj.id, {}).get("agent_id", ""),
+                "organization": [i.organization for i in obj.organizations],
+                "time": instance_map.get(obj.id, {}).get("time", ""),
+            })
+
+        return result
 
     @staticmethod
     def generate_monitor_instance_id(monitor_object_id, monitor_instance_name, interval):
