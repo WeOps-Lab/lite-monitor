@@ -10,6 +10,6 @@ def create_periodic_task(sender, **kwargs):
     # 如果不存在就创建一个新的定时任务，否则不创建
     PeriodicTask.objects.get_or_create(
         name="sync_instance_and_group",  # 任务名称
-        task="apps.monitor.tasks.sync_instance_and_group",  # 任务函数
+        task="apps.monitor.tasks.grouping_rule.sync_instance_and_group",  # 任务函数
         interval=schedule,  # 时间间隔
     )
