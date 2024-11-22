@@ -36,11 +36,11 @@ class SyncInstance:
         """通过查询指标获取实例信息"""
         instances_map = {}
         for monitor_info in MONITOR_OBJS:
-            if monitor_info["type"] not in self.monitor_map:
+            if monitor_info["name"] not in self.monitor_map:
                 continue
             query = monitor_info["default_metric"]
             metrics = VictoriaMetricsAPI().query(query)
-            for metric_info in metrics.get("result", []):
+            for metric_info in metrics.get("data", {}).get("result", []):
                 instance_id = metric_info["metric"].get("instance_id")
                 if not instance_id:
                     continue
