@@ -2,17 +2,71 @@ import logging
 
 from celery import shared_task
 
-from apps.monitor.models.monitor_object import MonitorInstanceGroupingRule, MonitorInstanceOrganization
+from apps.monitor.constants import MONITOR_OBJS
+from apps.monitor.models.monitor_object import MonitorInstanceGroupingRule, MonitorInstanceOrganization, MonitorObject, \
+    MonitorInstance
 from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
 
 logger = logging.getLogger("app")
 
 
 @shared_task
-def update_grouping_rule():
+def sync_instance_and_group():
+    """同步监控实例和分组规则"""
+
+    logger.info("Start to update monitor instance")
+    SyncInstance().run()
+    logger.info("Finish to update monitor instance")
+
     logger.info("Start to update monitor instance grouping rule")
     RuleGrouping().update_grouping()
     logger.info("Finish to update monitor instance grouping rule")
+
+
+class SyncInstance:
+
+    def __init__(self):
+        self.monitor_map = self.get_monitor_map()
+
+    def get_monitor_map(self):
+        monitor_objs = MonitorObject.objects.all()
+        return {i.name: i.id for i in monitor_objs}
+
+    def get_instance_map_by_metrics(self):
+        """通过查询指标获取实例信息"""
+        instances_map = {}
+        for monitor_info in MONITOR_OBJS:
+            if monitor_info["type"] not in self.monitor_map:
+                continue
+            query = monitor_info["default_metric"]
+            metrics = VictoriaMetricsAPI().query(query)
+            for metric_info in metrics.get("result", []):
+                instance_id = metric_info["metric"].get("instance_id")
+                if not instance_id:
+                    continue
+                instances_map[instance_id] = {
+                    "id": instance_id,
+                    "name": metric_info["metric"].get("instance_name"),
+                    "agent_id": metric_info["metric"].get("agent_id"),
+                    "monitor_object_id": self.monitor_map[monitor_info["name"]],
+                    "auto": True,
+                }
+        return instances_map
+
+    # 查询库中已有的实例
+    def get_exist_instance_set(self):
+        exist_instances = MonitorInstance.objects.all()
+        return {i.id for i in exist_instances}
+
+    def run(self):
+        """更新监控实例"""
+        metrics_instance_map = self.get_instance_map_by_metrics()
+        exist_instance_set = self.get_exist_instance_set()
+        create_instances = []
+        for instance_id, instance_info in metrics_instance_map.items():
+            if instance_id not in exist_instance_set:
+                create_instances.append(MonitorInstance(**instance_info))
+        MonitorInstance.objects.bulk_create(create_instances, batch_size=200)
 
 
 class RuleGrouping:
