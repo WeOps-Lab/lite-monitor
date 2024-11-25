@@ -88,6 +88,14 @@ class MonitorObjectService:
     @staticmethod
     def import_monitor_object(data: dict):
         """Import monitor object"""
+        if data.get("is_compound_object"):
+            MonitorObjectService.import_compound_monitor_object(data)
+        else:
+            MonitorObjectService.import_basic_monitor_object(data)
+
+    @staticmethod
+    def import_basic_monitor_object(data: dict):
+        """导入基础监控对象"""
         metrics = data.pop("metrics")
         monitor_obj, _ = MonitorObject.objects.update_or_create(name=data["name"], defaults=data)
 
@@ -146,10 +154,39 @@ class MonitorObjectService:
         if metrics_to_create:
             Metric.objects.bulk_create(metrics_to_create, batch_size=200)
 
+        return monitor_obj
+
+    @staticmethod
+    def import_compound_monitor_object(data: dict):
+        """导入复合监控对象"""
+        base_object = {}
+        derivative_objects = []
+        for object_info in data.get("objects", []):
+            if object_info.get("level") == "base":
+                base_object = object_info
+            else:
+                derivative_objects.append(object_info)
+
+        base_obj = MonitorObjectService.import_basic_monitor_object(base_object)
+        for derivative_object in derivative_objects:
+            derivative_object["parent"] = base_obj
+            MonitorObjectService.import_basic_monitor_object(derivative_object)
+
     @staticmethod
     def export_monitor_object(id: int):
         """导出监控对象"""
         monitor_obj = MonitorObject.objects.prefetch_related("metric_set").get(id=id)
+        if monitor_obj.level != "base" or monitor_obj.parent:
+            raise ValueError("Only base monitor object can be exported")
+        children = monitor_obj.children.all()
+        if children:
+            return MonitorObjectService.export_compound_monitor_object(monitor_obj, children)
+        else:
+            return MonitorObjectService.export_basic_monitor_object(monitor_obj)
+
+    @staticmethod
+    def export_basic_monitor_object(monitor_obj):
+        """导出基础监控对象"""
         metrics = monitor_obj.metric_set.all()
         data = {
             "name": monitor_obj.name,
@@ -169,6 +206,14 @@ class MonitorObjectService:
                 } for i in metrics
             ]
         }
+        return data
+
+    @staticmethod
+    def export_compound_monitor_object(monitor_obj, children):
+        """导出复合监控对象"""
+        data = {"is_compound_object": True, "objects": [MonitorObjectService.export_basic_monitor_object(monitor_obj)]}
+        for child in children:
+            data["objects"].append(MonitorObjectService.export_basic_monitor_object(child.id))
         return data
 
     @staticmethod

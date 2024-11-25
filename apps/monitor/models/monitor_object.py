@@ -5,8 +5,12 @@ from apps.core.models.time_info import TimeInfo
 
 
 class MonitorObject(TimeInfo, MaintainerInfo):
+    LEVEL_CHOICES = [('base', 'Base'), ('derivative', 'Derivative')]
+
     name = models.CharField(unique=True, max_length=100, verbose_name='监控对象')
     type = models.CharField(max_length=50, verbose_name='监控对象类型')
+    level = models.CharField(default="base", max_length=50, verbose_name='监控对象级别')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children', verbose_name='父级监控对象')
     description = models.TextField(blank=True, verbose_name='监控对象描述')
 
     class Meta:
