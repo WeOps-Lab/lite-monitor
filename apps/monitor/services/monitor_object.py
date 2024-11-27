@@ -5,10 +5,10 @@ from django.db.models import Prefetch
 from apps.core.utils.keycloak_client import KeyCloakClient
 from apps.monitor.constants import MONITOR_OBJS
 from apps.monitor.models.monitor_metrics import MetricGroup, Metric
-from apps.monitor.models.monitor_object import MonitorInstance, MonitorObject, MonitorInstanceOrganization
+from apps.monitor.models.monitor_object import MonitorInstance, MonitorObject
 from apps.core.utils.user_group import Group
 from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
-
+from apps.monitor.tasks.grouping_rule import sync_instance_and_group
 
 class MonitorObjectService:
 
@@ -62,6 +62,7 @@ class MonitorObjectService:
         for obj in objs:
             result.append({
                 "instance_id": obj.id,
+                "instance_name": obj.name,
                 "agent_id": instance_map.get(obj.id, {}).get("agent_id", ""),
                 "organization": [i.organization for i in obj.organizations],
                 "time": instance_map.get(obj.id, {}).get("time", ""),
@@ -219,28 +220,4 @@ class MonitorObjectService:
     @staticmethod
     def autodiscover_monitor_instance():
         """同步监控实例数据"""
-        objs = MonitorInstance.objects.all()
-        exist_instance_id = {i.id: i.auto for i in objs}
-
-        monitor_objs = MonitorObject.objects.all()
-        default_metric_map = {i["name"]: i["default_metric"] for i in MONITOR_OBJS}
-        create_list, delete_list = [], []
-        for monitor_obj in monitor_objs:
-            metric = default_metric_map[monitor_obj.name]
-            instance_map = MonitorObjectService.get_instances_by_metric(metric)
-            for instance_id in instance_map.keys():
-                if instance_id not in exist_instance_id:
-                    create_list.append(
-                        MonitorInstance(
-                            id=instance_id, name=instance_id, monitor_object=monitor_obj, interval=60, auto=True
-                        )
-                    )
-                    exist_instance_id[instance_id] = True
-                else:
-                    # 删除不存在的实例
-                    if exist_instance_id.get(instance_id) is True:
-                        delete_list.append(instance_id)
-        if create_list:
-            MonitorInstance.objects.bulk_create(create_list, batch_size=200)
-        if delete_list:
-            MonitorInstance.objects.filter(id__in=delete_list).delete()
+        sync_instance_and_group.delay()

@@ -38,15 +38,17 @@ class SyncInstance:
         for monitor_info in MONITOR_OBJS:
             if monitor_info["name"] not in self.monitor_map:
                 continue
+            instance_id_key = monitor_info["instance_id_key"]
+            instance_name_key = monitor_info["instance_name_key"]
             query = monitor_info["default_metric"]
             metrics = VictoriaMetricsAPI().query(query)
             for metric_info in metrics.get("data", {}).get("result", []):
-                instance_id = metric_info["metric"].get("instance_id")
+                instance_id = metric_info["metric"].get(instance_id_key)
                 if not instance_id:
                     continue
                 instances_map[instance_id] = {
                     "id": instance_id,
-                    "name": metric_info["metric"].get("instance_name"),
+                    "name": metric_info["metric"].get(instance_name_key),
                     "agent_id": metric_info["metric"].get("agent_id"),
                     "monitor_object_id": self.monitor_map[monitor_info["name"]],
                     "auto": True,
@@ -62,11 +64,15 @@ class SyncInstance:
         """更新监控实例"""
         metrics_instance_map = self.get_instance_map_by_metrics()
         exist_instance_set = self.get_exist_instance_set()
-        create_instances = []
+        create_instances, delete_instances = [], []
+        delete_instances.extend(exist_instance_set - set(metrics_instance_map.keys()))
         for instance_id, instance_info in metrics_instance_map.items():
             if instance_id not in exist_instance_set:
                 create_instances.append(MonitorInstance(**instance_info))
-        MonitorInstance.objects.bulk_create(create_instances, batch_size=200)
+        if delete_instances:
+            MonitorInstance.objects.filter(id__in=delete_instances).delete()
+        if create_instances:
+            MonitorInstance.objects.bulk_create(create_instances, batch_size=200)
 
 
 class RuleGrouping:

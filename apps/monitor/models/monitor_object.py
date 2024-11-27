@@ -29,7 +29,6 @@ class MonitorInstance(TimeInfo, MaintainerInfo):
     class Meta:
         verbose_name = '监控对象实例'
         verbose_name_plural = '监控对象实例'
-        unique_together = ('monitor_object', 'name')
 
 
 class MonitorInstanceOrganization(TimeInfo, MaintainerInfo):
