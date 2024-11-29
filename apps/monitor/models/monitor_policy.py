@@ -36,11 +36,12 @@ class MonitorPolicy(TimeInfo, MaintainerInfo):
 class MonitorEvent(models.Model):
     LEVEL_CHOICES = [("no_data", "No Data"), ('info', 'Info'), ('warning', 'Warning'), ('error', 'Error'), ('critical', 'Critical')]
 
-    policy = models.ForeignKey(MonitorPolicy, on_delete=models.CASCADE, verbose_name='监控策略')
-    monitor_instance = models.ForeignKey(MonitorInstance, on_delete=models.CASCADE, verbose_name='监控实例')
+    policy = models.ForeignKey(MonitorPolicy, blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='监控策略')
+    monitor_instance = models.ForeignKey(MonitorInstance, blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='监控实例')
     created_at = models.DateTimeField(db_index=True, auto_now_add=True, verbose_name="事件生成时间" )
-    value = models.FloatField(verbose_name='事件值')
+    value = models.FloatField(blank=True, null=True, verbose_name='事件值')
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name='事件级别')
+    content = models.TextField(blank=True, verbose_name='事件内容')
     notice_result = models.BooleanField(default=True, verbose_name='通知结果')
 
 
@@ -48,15 +49,18 @@ class MonitorAlert(TimeInfo):
     STATUS_CHOICES = [('new', 'New'), ('closed', 'Closed'), ('recovered', 'Recovered')]
     ALERT_TYPE_CHOICES = [('alert', 'Alert'), ('no_data', 'No Data')]
 
-    policy = models.ForeignKey(MonitorPolicy, on_delete=models.CASCADE, verbose_name='监控策略')
-    monitor_instance = models.ForeignKey(MonitorInstance, on_delete=models.CASCADE, verbose_name='监控实例')
+    policy = models.ForeignKey(MonitorPolicy, blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='监控策略')
+    monitor_instance = models.ForeignKey(MonitorInstance, blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='监控实例')
     alert_type = models.CharField(default="alert", choices=ALERT_TYPE_CHOICES, max_length=50, verbose_name='告警类型')
+    level = models.CharField(default="", max_length=20, verbose_name='最高告警级别')
+    value = models.FloatField(blank=True, null=True, verbose_name='最高告警值')
+    content = models.TextField(blank=True, verbose_name='告警内容')
     status = models.CharField(db_index=True, max_length=20, default="new", choices=STATUS_CHOICES, verbose_name='告警状态')
     start_event_id = models.IntegerField(blank=True, null=True, verbose_name='开始事件ID')
     start_event_time = models.DateTimeField(blank=True, null=True, verbose_name='开始事件时间')
     end_event_id = models.IntegerField(blank=True, null=True, verbose_name='结束事件ID')
     end_event_time = models.DateTimeField(blank=True, null=True, verbose_name='结束事件时间')
-    operator = models.CharField(max_length=50, verbose_name='告警处理人')
+    operator = models.CharField(blank=True, null=True, max_length=50, verbose_name='告警处理人')
 
     class Meta:
         verbose_name = '监控告警'

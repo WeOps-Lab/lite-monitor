@@ -1,10 +1,10 @@
 from rest_framework import routers
 
 from apps.monitor.views.monitor_alert import MonitorAlertVieSet, MonitorEventVieSet
+from apps.monitor.views.monitor_instance import MonitorInstanceVieSet, MonitorInstanceGroupingRuleVieSet
 from apps.monitor.views.monitor_metrics import  MetricGroupVieSet, MetricVieSet
 from apps.monitor.views.metrics_instance import MetricsInstanceVieSet
-from apps.monitor.views.monitor_object import MonitorObjectVieSet, MonitorInstanceGroupingRuleVieSet, \
-    MonitorInstanceVieSet
+from apps.monitor.views.monitor_object import MonitorObjectVieSet
 from apps.monitor.views.monitor_policy import MonitorPolicyVieSet
 
 router = routers.DefaultRouter()
