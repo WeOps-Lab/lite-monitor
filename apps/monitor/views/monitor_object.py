@@ -1,14 +1,12 @@
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from apps.core.utils.web_utils import WebUtils
-from apps.monitor.filters.monitor_object import MonitorObjectFilter, MonitorInstanceGroupingRuleFilter
-from apps.monitor.models.monitor_object import MonitorObject, MonitorInstanceGroupingRule
-from apps.monitor.serializers.monitor_object import MonitorObjectSerializer, MonitorInstanceGroupingRuleSerializer
+from apps.monitor.filters.monitor_object import MonitorObjectFilter
+from apps.monitor.models.monitor_object import MonitorObject
+from apps.monitor.serializers.monitor_object import MonitorObjectSerializer
 from apps.monitor.services.monitor_object import MonitorObjectService
-from config.default import AUTH_TOKEN_HEADER_NAME
 from config.drf.pagination import CustomPageNumberPagination
 
 
