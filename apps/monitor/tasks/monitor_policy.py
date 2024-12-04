@@ -228,7 +228,7 @@ class MonitorPolicyScan:
                         policy_id=self.policy.id,
                         monitor_instance_id=event_obj.monitor_instance_id,
                         alert_type="no_data",
-                        level="no_data",
+                        level=self.policy.no_data_level,
                         value=None,
                         content="no data",
                         status="new",

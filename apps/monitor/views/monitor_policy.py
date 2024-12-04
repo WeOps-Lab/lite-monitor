@@ -35,15 +35,31 @@ class MonitorPolicyVieSet(viewsets.ModelViewSet):
         self.update_or_create_task(policy_id, schedule)
         return response
 
+    def format_contab(self, schedule):
+        if schedule["type"] == 'min':
+            # 每分钟执行一次
+            return crontab(minute=f"*/{schedule['value']}")
+        elif schedule["type"] == 'hour':
+            # 每小时执行一次
+            return crontab(minute=0, hour=f"*/{schedule['value']}")
+        elif schedule["type"] == 'day':
+            # 每天执行一次
+            return crontab(minute=0, hour=0, day_of_month=f"*/{schedule['value']}")
+        else:
+            raise ValueError("Invalid type. Use 'min', 'hour', or 'day'.")
+
+
     def update_or_create_task(self, policy_id, schedule):
         task_name = f'scan_policy_task_{policy_id}'
 
         # 移除旧的定时任务
         current_app.control.revoke(task_name, terminate=True)
 
+        format_contab = self.format_contab(schedule)
+
         # 添加新的定时任务
         current_app.add_periodic_task(
-            crontab(schedule),
+            format_contab,
             scan_policy_task.s(policy_id),
             name=task_name
         )
