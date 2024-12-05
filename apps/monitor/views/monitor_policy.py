@@ -1,12 +1,13 @@
+import json
+
+from django_celery_beat.models import PeriodicTask, CrontabSchedule
 from rest_framework import viewsets
 
 from apps.monitor.filters.monitor_policy import MonitorPolicyFilter
 from apps.monitor.models.monitor_policy import MonitorPolicy
 from apps.monitor.serializers.monitor_policy import MonitorPolicySerializer
 from config.drf.pagination import CustomPageNumberPagination
-from celery import current_app
-from celery.schedules import crontab
-from apps.monitor.tasks.monitor_policy import scan_policy_task
+
 
 class MonitorPolicyVieSet(viewsets.ModelViewSet):
     queryset = MonitorPolicy.objects.all()
@@ -35,31 +36,41 @@ class MonitorPolicyVieSet(viewsets.ModelViewSet):
         self.update_or_create_task(policy_id, schedule)
         return response
 
-    def format_contab(self, schedule):
-        if schedule["type"] == 'min':
-            # 每分钟执行一次
-            return crontab(minute=f"*/{schedule['value']}")
-        elif schedule["type"] == 'hour':
-            # 每小时执行一次
-            return crontab(minute=0, hour=f"*/{schedule['value']}")
-        elif schedule["type"] == 'day':
-            # 每天执行一次
-            return crontab(minute=0, hour=0, day_of_month=f"*/{schedule['value']}")
-        else:
-            raise ValueError("Invalid type. Use 'min', 'hour', or 'day'.")
+    def format_crontab(self, schedule):
+        """
+            将 schedule 格式化为 CrontabSchedule 实例
+            """
+        schedule_type = schedule.get('type')
+        value = schedule.get('value')
 
+        if schedule_type == 'min':
+            return CrontabSchedule.objects.get_or_create(
+                minute=f'*/{value}', hour='*', day_of_month='*', month_of_year='*', day_of_week='*'
+            )[0]
+        elif schedule_type == 'hour':
+            return CrontabSchedule.objects.get_or_create(
+                minute=0, hour=f'*/{value}', day_of_month='*', month_of_year='*', day_of_week='*'
+            )[0]
+        elif schedule_type == 'day':
+            return CrontabSchedule.objects.get_or_create(
+                minute=0, hour=0, day_of_month=f'*/{value}', month_of_year='*', day_of_week='*'
+            )[0]
+        else:
+            raise ValueError('Invalid schedule type')
 
     def update_or_create_task(self, policy_id, schedule):
         task_name = f'scan_policy_task_{policy_id}'
 
-        # 移除旧的定时任务
-        current_app.control.revoke(task_name, terminate=True)
+        # 删除旧的定时任务
+        PeriodicTask.objects.filter(name=task_name).delete()
 
-        format_contab = self.format_contab(schedule)
-
-        # 添加新的定时任务
-        current_app.add_periodic_task(
-            format_contab,
-            scan_policy_task.s(policy_id),
-            name=task_name
+        # 解析 schedule，并创建相应的调度
+        format_crontab = self.format_crontab(schedule)
+        # 创建新的 PeriodicTask
+        PeriodicTask.objects.create(
+            name=task_name,
+            task='apps.monitor.tasks.monitor_policy.scan_policy_task',
+            args=json.dumps([policy_id]),  # 任务参数，使用 JSON 格式存储
+            crontab=format_crontab,
+            enabled=True
         )

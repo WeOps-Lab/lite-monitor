@@ -47,14 +47,39 @@ class MonitorPolicyScan:
         objs = MonitorInstance.objects.filter(id__in=instance_list)
         return {i.id: i.name for i in objs}
 
+    def format_to_vm_filter(self, conditions):
+        """
+        将纬度条件格式化为 VictoriaMetrics 的标准语法。
+
+        Args:
+            conditions (list): 包含过滤条件的字典列表，每个字典格式为：
+                {"name": <纬度名称>, "value": <值>, "method": <运算符>}
+
+        Returns:
+            str: 格式化后的 VictoriaMetrics 过滤条件语法。
+        """
+        vm_filters = []
+        for condition in conditions:
+            name = condition.get("name")
+            value = condition.get("value")
+            method = condition.get("method")
+            vm_filters.append(f'{name}{method}"{value}"')
+
+        # 使用逗号连接多个条件
+        return ",".join(vm_filters)
+
     def query_metrics(self):
         """查询指标"""
         step = int(self.policy.period / 10)
         end_timestamp = int(datetime.now(timezone.utc).timestamp())
         start_timestamp = end_timestamp - self.policy.period
-        query = self.policy.query
+        query = self.policy.metric.query
         instances_str = "|".join(self.instances_map.keys())
-        query.replace("__labels__", f"instance_id=~'{instances_str}'")
+        instance_str = f"instance_id=~'{instances_str}'," if instances_str else ""
+        vm_filter_str = self.format_to_vm_filter(self.policy.filter)
+        vm_filter_str = f"{vm_filter_str}" if vm_filter_str else ""
+        label_str = f"{instance_str}{vm_filter_str}"
+        query = query.replace("__$labels__", label_str)
         metrics = VictoriaMetricsAPI().query_range(query, start_timestamp, end_timestamp, step)
         return metrics
 
@@ -73,12 +98,12 @@ class MonitorPolicyScan:
         if not method:
             raise ValueError("invalid policy method")
         metrics_map = {}
-        for metric_info in metrics.get("result", []):
+        for metric_info in metrics.get("data", {}).get("result", []):
             instance_id = metric_info["metric"].get(self.instance_id_key)
             if instance_id not in metrics_map:
                 metrics_map[instance_id] = []
-            metrics_map[instance_id].append(metric_info["value"][1])
-
+            for value in metric_info["values"]:
+                metrics_map[instance_id].append(float(value[1]))
         result = {instance_id: method(values) for instance_id, values in metrics_map.items()}
         return result
 
@@ -109,7 +134,7 @@ class MonitorPolicyScan:
                         "instance_id": instance_id,
                         "value": value,
                         "level": threshold_info["level"],
-                        "content": f'{self.policy.monitor_object.type-self.policy.monitor_object.name} {self.instances_map[instance_id]} {self.policy.metric.name} {threshold_info["method"]} {threshold_info["value"]}',
+                        "content": f'{self.policy.monitor_object.type}-{self.policy.monitor_object.name} {self.instances_map.get(instance_id, "")} {self.policy.metric.name} {threshold_info["method"]} {threshold_info["value"]}',
                     }
                     break
 
@@ -150,7 +175,8 @@ class MonitorPolicyScan:
 
     def recovery_alert(self, event_objs):
         """告警恢复处理"""
-
+        if self.policy.recovery_condition <= 0:
+            return
         event_objs_map = {event.monitor_instance_id: event for event in event_objs}
         recovery_alerts, alert_level_updates = [], []
         for alert in self.active_alerts:
@@ -195,6 +221,8 @@ class MonitorPolicyScan:
             if event_obj.level == "info":
                 continue
             if event_obj.level == "no_data":
+                if self.policy.no_data_alert <= 0:
+                    continue
                 no_data_events.append(event_obj)
             else:
                 alert_events.append(event_obj)
@@ -258,9 +286,13 @@ class MonitorPolicyScan:
 
     def run(self):
         """运行"""
+        print("policy_id", self.policy.id)
         self.set_monitor_obj_instance_key()
         metrics = self.query_metrics()
+        print("metrics", metrics)
         aggregation_result = self.metric_aggregation(metrics)
+        print("aggregation_result", aggregation_result)
         events = self.compare_event(aggregation_result)
+        print("events", events)
         event_objs = self.create_event(events)
         self.alert_handling(event_objs)
