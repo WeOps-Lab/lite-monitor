@@ -286,13 +286,9 @@ class MonitorPolicyScan:
 
     def run(self):
         """运行"""
-        print("policy_id", self.policy.id)
         self.set_monitor_obj_instance_key()
         metrics = self.query_metrics()
-        print("metrics", metrics)
         aggregation_result = self.metric_aggregation(metrics)
-        print("aggregation_result", aggregation_result)
         events = self.compare_event(aggregation_result)
-        print("events", events)
         event_objs = self.create_event(events)
         self.alert_handling(event_objs)
