@@ -5,9 +5,12 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.utils.web_utils import WebUtils
-from apps.monitor.models import MonitorAlert, MonitorEvent
+from apps.monitor.models import MonitorAlert, MonitorEvent, MonitorPolicy, MonitorInstance
 from apps.monitor.filters.monitor_alert import MonitorAlertFilter
 from apps.monitor.serializers.monitor_alert import MonitorAlertSerializer
+from apps.monitor.serializers.monitor_instance import MonitorInstanceSerializer
+from apps.monitor.serializers.monitor_metrics import MetricSerializer
+from apps.monitor.serializers.monitor_policy import MonitorPolicySerializer
 from config.drf.pagination import CustomPageNumberPagination
 
 
@@ -22,6 +25,51 @@ class MonitorAlertVieSet(
     filterset_class = MonitorAlertFilter
     pagination_class = CustomPageNumberPagination
 
+    def list(self, request, *args, **kwargs):
+        # 获取分页参数
+        page = int(request.GET.get('page', 1))  # 默认第1页
+        page_size = int(request.GET.get('page_size', 10))  # 默认每页10条数据
+
+        # 获取经过过滤器处理的数据
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # 计算分页的起始位置
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        # 获取当前页的数据
+        page_data = queryset[start:end]
+
+        # 执行序列化
+        serializer = self.get_serializer(page_data, many=True)
+        results = serializer.data
+
+        # 获取当前页中所有的 policy_id 和 monitor_instance_id
+        policy_ids = [alert["policy_id"] for alert in results if alert["policy_id"]]
+        instance_ids = [alert["monitor_instance_id"] for alert in results if alert["monitor_instance_id"]]
+
+        # 查询所有相关的策略和实例
+        policies = MonitorPolicy.objects.filter(id__in=policy_ids).select_related("metric")
+        instances = MonitorInstance.objects.filter(id__in=instance_ids)
+
+        # 将策略和实例数据映射到字典中
+        policy_dict = {policy.id: policy for policy in policies}
+        instance_dict = {instance.id: instance for instance in instances}
+
+        metrics = {policy.metric.id: policy.metric for policy in policies}
+
+        # 补充策略和实例到每个 alert 中
+        for alert in results:
+            # 在 results 字典中添加完整的 policy 和 monitor_instance 信息
+            alert["policy"] = MonitorPolicySerializer(policy_dict.get(alert["policy_id"])).data if alert[
+                "policy_id"] else None
+            alert["monitor_instance"] = MonitorInstanceSerializer(
+                instance_dict.get(alert["monitor_instance_id"])).data if alert["monitor_instance_id"] else None
+            alert["metric"] = MetricSerializer(metrics.get(alert["policy"]["metric"])).data if alert["policy"] else None
+
+        # 返回成功响应
+        return WebUtils.response_success(dict(count=queryset.count(), results=results))
+
 
 class MonitorEventVieSet(viewsets.ViewSet):
 
@@ -29,10 +77,14 @@ class MonitorEventVieSet(viewsets.ViewSet):
         operation_description="查询告警事件",
         manual_parameters=[
             openapi.Parameter("alert_id", openapi.IN_PATH, description="告警id", type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter("page", openapi.IN_QUERY, description="页码", type=openapi.TYPE_INTEGER, required=False),
+            openapi.Parameter("page_size", openapi.IN_QUERY, description="每页数量", type=openapi.TYPE_INTEGER, required=False),
         ],
     )
     @action(methods=['get'], detail=False, url_path='query/(?P<alert_id>[^/.]+)')
     def get_events(self, request, alert_id):
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 10))
         alert_obj = MonitorAlert.objects.get(id=alert_id)
         event_query = dict(
             policy_id=alert_obj.policy_id,
@@ -41,7 +93,8 @@ class MonitorEventVieSet(viewsets.ViewSet):
         )
         if alert_obj.end_event_time:
             event_query["created_at__lte"] = alert_obj.end_event_time
-        events = MonitorEvent.objects.filter(**event_query).order_by("-created_at")
+        q_set = MonitorEvent.objects.filter(**event_query).order_by("-created_at")
+        events = q_set[(page - 1) * page_size: page * page_size]
         result = [
             {
                 "id": i.id,
@@ -54,4 +107,4 @@ class MonitorEventVieSet(viewsets.ViewSet):
             }
             for i in events
         ]
-        return WebUtils.response_success(result)
+        return WebUtils.response_success(dict(count=q_set.count(), results=result))

@@ -3,7 +3,7 @@ import logging
 from celery.app import shared_task
 from datetime import datetime, timezone
 
-from apps.monitor.constants import POLICY_METHODS, THRESHOLD_METHODS, LEVEL_WEIGHT, MONITOR_OBJS
+from apps.monitor.constants import THRESHOLD_METHODS, LEVEL_WEIGHT, MONITOR_OBJS
 from apps.monitor.models import MonitorPolicy, MonitorInstanceOrganization, MonitorAlert, MonitorEvent, MonitorInstance
 from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
 
@@ -16,10 +16,11 @@ def scan_policy_task(policy_id):
     """扫描监控策略"""
     logger.info("start to update monitor instance grouping rule")
     policy_obj = MonitorPolicy.objects.filter(id=policy_id).select_related("metric", "monitor_object").first()
-    if policy_obj:
-        MonitorPolicyScan(policy_obj).run()
-    else:
+    if not policy_obj:
         logger.warning(f"No MonitorPolicy found with id {policy_id}")
+    if not policy_obj.enable:
+        logger.info(f"MonitorPolicy {policy_id} is disabled")
+    MonitorPolicyScan(policy_obj).run()
     logger.info("end to update monitor instance grouping rule")
 
 class MonitorPolicyScan:
@@ -68,19 +69,22 @@ class MonitorPolicyScan:
         # 使用逗号连接多个条件
         return ",".join(vm_filters)
 
-    def query_metrics(self):
+    def query_aggregration_metrics(self):
         """查询指标"""
-        step = int(self.policy.period / 10)
         end_timestamp = int(datetime.now(timezone.utc).timestamp())
         start_timestamp = end_timestamp - self.policy.period
         query = self.policy.metric.query
+        # 实例条件
         instances_str = "|".join(self.instances_map.keys())
         instance_str = f"instance_id=~'{instances_str}'," if instances_str else ""
+        # 纬度条件
         vm_filter_str = self.format_to_vm_filter(self.policy.filter)
         vm_filter_str = f"{vm_filter_str}" if vm_filter_str else ""
         label_str = f"{instance_str}{vm_filter_str}"
         query = query.replace("__$labels__", label_str)
-        metrics = VictoriaMetricsAPI().query_range(query, start_timestamp, end_timestamp, step)
+        group_by_str = f" by ({','.join(self.policy.group_by)})" if self.policy.group_by else ""
+        aggr_query = f"{self.policy.algorithm}({query}){group_by_str}"
+        metrics = VictoriaMetricsAPI().query(aggr_query, start_timestamp, end_timestamp)
         return metrics
 
     def set_monitor_obj_instance_key(self):
@@ -92,19 +96,12 @@ class MonitorPolicyScan:
         if not self.instance_id_key:
             raise ValueError("invalid monitor object instance key")
 
-    def metric_aggregation(self, metrics):
-        """指标聚合"""
-        method = POLICY_METHODS.get(self.policy.algorithm)
-        if not method:
-            raise ValueError("invalid policy method")
-        metrics_map = {}
+    def format_aggregration_metrics(self, metrics):
+        """格式化聚合指标"""
+        result = {}
         for metric_info in metrics.get("data", {}).get("result", []):
             instance_id = metric_info["metric"].get(self.instance_id_key)
-            if instance_id not in metrics_map:
-                metrics_map[instance_id] = []
-            for value in metric_info["values"]:
-                metrics_map[instance_id].append(float(value[1]))
-        result = {instance_id: method(values) for instance_id, values in metrics_map.items()}
+            result[instance_id] = float(metric_info["value"][1])
         return result
 
     def compare_event(self, aggregation_result):
@@ -134,7 +131,7 @@ class MonitorPolicyScan:
                         "instance_id": instance_id,
                         "value": value,
                         "level": threshold_info["level"],
-                        "content": f'{self.policy.monitor_object.type}-{self.policy.monitor_object.name} {self.instances_map.get(instance_id, "")} {self.policy.metric.name} {threshold_info["method"]} {threshold_info["value"]}',
+                        "content": f'{self.policy.monitor_object.type}-{self.policy.monitor_object.name} {self.instances_map.get(instance_id, "")} {self.policy.metric.display_name} {threshold_info["method"]} {threshold_info["value"]}',
                     }
                     break
 
@@ -181,12 +178,15 @@ class MonitorPolicyScan:
         recovery_alerts, alert_level_updates = [], []
         for alert in self.active_alerts:
             event_obj = event_objs_map.get(alert.monitor_instance_id)
+            if not event_obj:
+                continue
             if alert.alert_type == "no_data":
                 # 无数据告警恢复
                 if event_obj.level != "no_data":
                     alert.status = "recovered"
                     alert.end_event_id = event_obj.id
                     alert.end_event_time = event_obj.created_at
+                    alert.operator = "system"
                     recovery_alerts.append(alert)
             else:
                 # 正常告警恢复
@@ -199,6 +199,7 @@ class MonitorPolicyScan:
                         alert.status = "recovered"
                         alert.end_event_id = event_obj.id
                         alert.end_event_time = event_obj.created_at
+                        alert.operator = "system"
                         recovery_alerts.append(alert)
                 else:
                     # 告警等级升级
@@ -239,7 +240,7 @@ class MonitorPolicyScan:
                 status="new",
                 start_event_id=event_obj.id,
                 start_event_time=event_obj.created_at,
-                operator="system",
+                operator="",
             )
             for event_obj in alert_events
         ]
@@ -287,8 +288,8 @@ class MonitorPolicyScan:
     def run(self):
         """运行"""
         self.set_monitor_obj_instance_key()
-        metrics = self.query_metrics()
-        aggregation_result = self.metric_aggregation(metrics)
+        aggregration_metrics = self.query_aggregration_metrics()
+        aggregation_result = self.format_aggregration_metrics(aggregration_metrics)
         events = self.compare_event(aggregation_result)
         event_objs = self.create_event(events)
         self.alert_handling(event_objs)

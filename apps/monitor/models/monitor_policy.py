@@ -19,6 +19,7 @@ class MonitorPolicy(TimeInfo, MaintainerInfo):
     schedule = models.JSONField(default=dict, verbose_name="策略执行周期")
     period = models.IntegerField(verbose_name="每次监控检测的数据周期(秒)")
     algorithm = models.CharField(max_length=10, choices=ALGORITHM_CHOICES, verbose_name="聚合算法")
+    group_by = models.JSONField(default=list, verbose_name="分组字段")
     threshold = models.JSONField(default=list, verbose_name="阈值")
     recovery_condition = models.SmallIntegerField(default=1, verbose_name="多少周期不满足阈值自动恢复")
 
@@ -28,6 +29,8 @@ class MonitorPolicy(TimeInfo, MaintainerInfo):
     notice = models.BooleanField(default=True, verbose_name="是否通知")
     notice_type = models.CharField(max_length=10, default="email", choices=NOTICE_TYPE_CHOICES, verbose_name="通知方式")
     notice_users = models.JSONField(default=list, verbose_name="通知人")
+    # 是否启动策略
+    enable = models.BooleanField(default=True, verbose_name="是否启用")
 
     class Meta:
         verbose_name = '监控策略'

@@ -11,7 +11,7 @@ MONITOR_OBJS = [
     {"type": "Web", "name": "Website", "default_metric": "probe_duration_seconds_gauge", "instance_id_key": "instance_id", "instance_name_key": "instance_name"},
     {"type": "K8S", "name": "Cluster", "default_metric": 'internal_write_write_time_ns{instance_type="k8s"}', "instance_id_key": "instance_id", "instance_name_key": "instance_name"},
     {"type": "K8S", "name": "Pod", "default_metric": 'kube_pod_container_info_gauge', "instance_id_key": "uid", "instance_name_key": "pod"},
-    {"type": "K8S", "name": "Node", "default_metric": 'kube_node_info_gauge', "instance_id_key": "system_uuid", "instance_name_key": "node"},
+    {"type": "K8S", "name": "Node", "default_metric": 'kube_node_info_gauge', "instance_id_key": "node", "instance_name_key": "node"},
 ]
 
 # 监控策略的计算方法

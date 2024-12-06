@@ -26,14 +26,16 @@ class MonitorPolicyVieSet(viewsets.ModelViewSet):
         response = super().update(request, *args, **kwargs)
         policy_id = kwargs['pk']
         schedule = request.data.get('schedule')
-        self.update_or_create_task(policy_id, schedule)
+        if schedule:
+            self.update_or_create_task(policy_id, schedule)
         return response
 
     def partial_update(self, request, *args, **kwargs):
         response = super().partial_update(request, *args, **kwargs)
         policy_id = kwargs['pk']
         schedule = request.data.get('schedule')
-        self.update_or_create_task(policy_id, schedule)
+        if schedule:
+            self.update_or_create_task(policy_id, schedule)
         return response
 
     def format_crontab(self, schedule):
