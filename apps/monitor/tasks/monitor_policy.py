@@ -15,12 +15,18 @@ logger = logging.getLogger("app")
 def scan_policy_task(policy_id):
     """扫描监控策略"""
     logger.info("start to update monitor instance grouping rule")
+
     policy_obj = MonitorPolicy.objects.filter(id=policy_id).select_related("metric", "monitor_object").first()
     if not policy_obj:
         logger.warning(f"No MonitorPolicy found with id {policy_id}")
     if not policy_obj.enable:
         logger.info(f"MonitorPolicy {policy_id} is disabled")
-    MonitorPolicyScan(policy_obj).run()
+
+    policy_obj.last_run_time = datetime.now(timezone.utc)           # 更新最后执行时间
+    policy_obj.save()
+
+    MonitorPolicyScan(policy_obj).run()                        # 执行监控策略
+
     logger.info("end to update monitor instance grouping rule")
 
 class MonitorPolicyScan:
@@ -166,7 +172,7 @@ class MonitorPolicyScan:
 
     def notice(self, events):
         """通知"""
-        # todo 告警通知
+        # todo 告警事件通知
         for event in events:
             logger.info(f"to {self.policy.notice_users}，instance {event['instance_id']} has a new event, value is {event['value']}")
 

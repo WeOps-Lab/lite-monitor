@@ -1,7 +1,10 @@
+from datetime import datetime, timezone
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from apps.core.utils.web_utils import WebUtils
@@ -69,6 +72,27 @@ class MonitorAlertVieSet(
 
         # 返回成功响应
         return WebUtils.response_success(dict(count=queryset.count(), results=results))
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # 检查是否要更新 status 和其他字段
+        updated_data = serializer.validated_data
+        if updated_data.get("status") == "closed":
+            updated_data["end_event_time"] = datetime.now(timezone.utc)  # 补充时间
+            updated_data["operator"] = request.user.username  # 假设操作人从请求中获取
+
+        self.perform_update(serializer)
+
+        # 清理缓存
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
 
 class MonitorEventVieSet(viewsets.ViewSet):

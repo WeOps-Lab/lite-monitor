@@ -17,15 +17,24 @@ class MonitorInstanceVieSet(viewsets.ViewSet):
     @swagger_auto_schema(
         operation_id="monitor_instance_list",
         operation_description="监控实例列表",
-        manual_parameters=[openapi.Parameter("monitor_object_id", openapi.IN_PATH, description="指标查询参数", type=openapi.TYPE_INTEGER, required=True)],
+        manual_parameters=[
+            openapi.Parameter("monitor_object_id", openapi.IN_PATH, description="指标查询参数", type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter("page", openapi.IN_QUERY, description="页码", type=openapi.TYPE_INTEGER),
+            openapi.Parameter("page_size", openapi.IN_QUERY, description="每页数据条数", type=openapi.TYPE_INTEGER),
+            openapi.Parameter("add_metrics", openapi.IN_QUERY, description="是否添加指标", type=openapi.TYPE_BOOLEAN),
+        ],
     )
     @action(methods=['get'], detail=False, url_path='(?P<monitor_object_id>[^/.]+)/list')
     def monitor_instance_list(self, request, monitor_object_id):
-        inst_list = MonitorObjectService.get_monitor_instance(
+        page, page_size = request.GET.get("page", 1), request.GET.get("page_size", 10)
+        data = MonitorObjectService.get_monitor_instance(
             int(monitor_object_id),
+            int(page),
+            int(page_size),
             request.META.get(AUTH_TOKEN_HEADER_NAME).split("Bearer ")[-1],
+            bool(request.GET.get("add_metrics", False))
         )
-        return WebUtils.response_success(inst_list)
+        return WebUtils.response_success(data)
 
     @swagger_auto_schema(
         operation_id="generate_monitor_instance_id",

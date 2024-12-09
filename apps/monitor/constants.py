@@ -7,11 +7,46 @@ VICTORIAMETRICS_PWD = os.getenv("VICTORIAMETRICS_PWD")
 
 # 内置的监控对象
 MONITOR_OBJS = [
-    {"type": "OS", "name": "Host", "default_metric": 'node_load1_gauge{instance_type="os"}', "instance_id_key": "instance_id", "instance_name_key": "instance_name"},
-    {"type": "Web", "name": "Website", "default_metric": "probe_duration_seconds_gauge", "instance_id_key": "instance_id", "instance_name_key": "instance_name"},
-    {"type": "K8S", "name": "Cluster", "default_metric": 'internal_write_write_time_ns{instance_type="k8s"}', "instance_id_key": "instance_id", "instance_name_key": "instance_name"},
-    {"type": "K8S", "name": "Pod", "default_metric": 'kube_pod_container_info_gauge', "instance_id_key": "uid", "instance_name_key": "pod"},
-    {"type": "K8S", "name": "Node", "default_metric": 'kube_node_info_gauge', "instance_id_key": "node", "instance_name_key": "node"},
+    {
+        "type": "OS",
+        "name": "Host",
+        "default_metric": 'node_load1_gauge{instance_type="os"}',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["cpu_summary.usage", "mem.pct_usable", "load5"],
+    },
+    {
+        "type": "Web",
+        "name": "Website",
+        "default_metric": "probe_duration_seconds_gauge",
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["http_success.rate", "http_total.duration"],
+    },
+    {
+        "type": "K8S",
+        "name": "Cluster",
+        "default_metric": 'internal_write_write_time_ns{instance_type="k8s"}',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["cluster_pod_count", "cluster_node_count"],
+    },
+    {
+        "type": "K8S",
+        "name": "Pod",
+        "default_metric": 'kube_pod_container_info_gauge',
+        "instance_id_key": "uid",
+        "instance_name_key": "pod",
+        "supplementary_indicators": ["pod_status", "pod_cpu_utilization","pod_memory_utilization"],
+    },
+    {
+        "type": "K8S",
+        "name": "Node",
+        "default_metric": 'kube_node_info_gauge',
+        "instance_id_key": "node",
+        "instance_name_key": "node",
+        "supplementary_indicators": ["node_status_condition", "node_cpu_utilization", "node_memory_utilization"],
+    },
 ]
 
 # 监控策略的计算方法

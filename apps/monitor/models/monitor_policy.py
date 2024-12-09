@@ -31,6 +31,7 @@ class MonitorPolicy(TimeInfo, MaintainerInfo):
     notice_users = models.JSONField(default=list, verbose_name="通知人")
     # 是否启动策略
     enable = models.BooleanField(default=True, verbose_name="是否启用")
+    last_run_time = models.DateTimeField(blank=True, null=True, verbose_name="最后一次执行时间")
 
     class Meta:
         verbose_name = '监控策略'
