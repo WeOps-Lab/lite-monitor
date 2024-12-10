@@ -87,6 +87,9 @@ class MonitorPolicyScan:
         vm_filter_str = self.format_to_vm_filter(self.policy.filter)
         vm_filter_str = f"{vm_filter_str}" if vm_filter_str else ""
         label_str = f"{instance_str}{vm_filter_str}"
+        # 去掉label尾部多余的逗号
+        if label_str.endswith(","):
+            label_str = label_str[:-1]
         query = query.replace("__$labels__", label_str)
         group_by_str = f" by ({','.join(self.policy.group_by)})" if self.policy.group_by else ""
         aggr_query = f"{self.policy.algorithm}({query}){group_by_str}"
@@ -170,11 +173,38 @@ class MonitorPolicyScan:
         event_objs = MonitorEvent.objects.bulk_create(new_event_creates, batch_size=200)
         return event_objs
 
-    def notice(self, events):
+    def send_email(self, event_obj):
+        """发送邮件"""
+        title = f"告警通知：{self.policy.name}"
+        content = f"告警内容：{event_obj.content}"
+        result = []
+        for user in self.policy.notice_users:
+            # todo 发送邮件
+            try:
+                notice_result = {"user": user, "status": "success"}
+            except Exception as e:
+                notice_result = {"user": user, "status": "failed", "error": str(e)}
+            result.append(notice_result)
+        return result
+
+    def notice(self, event_objs):
         """通知"""
-        # todo 告警事件通知
-        for event in events:
-            logger.info(f"to {self.policy.notice_users}，instance {event['instance_id']} has a new event, value is {event['value']}")
+        active_alert_set = {alert.monitor_instance_id for alert in self.active_alerts}
+        for event in event_objs:
+            # 非异常事件不通知
+            if event.level == "info":
+                continue
+            if event.level == "no_data":
+                # 无数据告警通知为开启，不进行通知
+                if self.policy.no_data_alert <= 0:
+                    continue
+                # 没有活跃告警，不进行通知
+                if event.monitor_instance_id not in active_alert_set:
+                    continue
+            notice_results = self.send_email(event)
+            event.notice_result = notice_results
+        # 批量更新通知结果
+        MonitorEvent.objects.bulk_update(event_objs, ["notice_result"], batch_size=200)
 
     def recovery_alert(self, event_objs):
         """告警恢复处理"""
@@ -299,3 +329,4 @@ class MonitorPolicyScan:
         events = self.compare_event(aggregation_result)
         event_objs = self.create_event(events)
         self.alert_handling(event_objs)
+        self.notice(event_objs)

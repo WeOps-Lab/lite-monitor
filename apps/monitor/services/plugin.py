@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from apps.monitor.models import MonitorPlugin
 from apps.monitor.models.monitor_metrics import MetricGroup, Metric
 from apps.monitor.models.monitor_object import MonitorObject
@@ -18,13 +20,16 @@ class MonitorPluginService:
         """导入基础监控对象"""
         metrics = data.pop("metrics")
         plugin = data.pop("plugin")
-        desc = data.get("plugin_desc", "")
+        desc = data.pop("plugin_desc", "")
         monitor_obj, _ = MonitorObject.objects.update_or_create(name=data["name"], defaults=data)
-        plugin_obj, _ = MonitorPlugin.objects.update_or_create(
-            monitor_object_id=monitor_obj.id,
-            name=plugin["name"],
-            defaults=dict(monitor_object_id=monitor_obj.id, name=plugin, description=desc),
-        )
+
+        with transaction.atomic():
+            plugin_obj, _ = MonitorPlugin.objects.update_or_create(
+                name=plugin,
+                defaults=dict(name=plugin, description=desc),
+            )
+            plugin_obj.monitor_object.set([monitor_obj])
+
         old_groups = MetricGroup.objects.filter(monitor_object=monitor_obj)
         old_groups_name = {i.name for i in old_groups}
 
@@ -52,7 +57,6 @@ class MonitorPluginService:
                 existing_metric = existing_metrics[metric["name"]]
                 existing_metric.metric_group_id = groups_map[metric["metric_group"]]
                 existing_metric.display_name = metric["display_name"]
-                existing_metric.type = metric["type"]
                 existing_metric.query = metric["query"]
                 existing_metric.unit = metric["unit"]
                 existing_metric.data_type = metric["data_type"]
@@ -67,7 +71,6 @@ class MonitorPluginService:
                         metric_group_id=groups_map[metric["metric_group"]],
                         name=metric["name"],
                         display_name=metric["display_name"],
-                        type=metric["type"],
                         query=metric["query"],
                         unit=metric["unit"],
                         data_type=metric["data_type"],
@@ -78,7 +81,7 @@ class MonitorPluginService:
 
         if metrics_to_update:
             Metric.objects.bulk_update(metrics_to_update, [
-                "metric_group_id", "display_name", "type", "query", "unit", "data_type", "description", "dimensions"
+                "metric_group_id", "display_name", "query", "unit", "data_type", "description", "dimensions"
             ], batch_size=200)
 
         if metrics_to_create:
@@ -134,7 +137,6 @@ class MonitorPluginService:
                     "metric_group": i.metric_group.name,
                     "name": i.name,
                     "display_name": i.display_name,
-                    "type": i.type,
                     "query": i.query,
                     "unit": i.unit,
                     "data_type": i.data_type,

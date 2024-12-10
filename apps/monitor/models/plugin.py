@@ -9,7 +9,7 @@ from apps.monitor.models.monitor_object import MonitorObject
 class MonitorPlugin(TimeInfo, MaintainerInfo):
 
     monitor_object = models.ManyToManyField(MonitorObject, verbose_name='监控对象')
-    name = models.CharField(max_length=100, verbose_name='插件名称')
+    name = models.CharField(unique=True, max_length=100, verbose_name='插件名称')
     description = models.TextField(blank=True, verbose_name='插件描述')
 
     class Meta:

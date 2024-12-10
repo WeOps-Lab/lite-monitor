@@ -93,7 +93,7 @@ class MonitorObjectService:
             for metric_obj in metrics_obj:
                 query = metric_obj.query
                 instance_str = "|".join([i["instance_id"] for i in result])
-                query = query.replace("__$labels__", f"{instance_key}=~'{instance_str}',")
+                query = query.replace("__$labels__", f"{instance_key}=~'{instance_str}'")
                 group_by_str = f" by ({instance_key})"
                 aggr_query = f"avg({query}){group_by_str}"
                 metrics = VictoriaMetricsAPI().query(aggr_query)

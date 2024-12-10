@@ -24,7 +24,6 @@ class Metric(TimeInfo, MaintainerInfo):
     metric_group = models.ForeignKey(MetricGroup, on_delete=models.CASCADE, verbose_name='指标分组')
     name = models.CharField(max_length=100, verbose_name="指标名称")
     display_name = models.CharField(max_length=100, default="", verbose_name='指标展示名称')
-    type = models.CharField(max_length=50, verbose_name='指标类型')
     query = models.TextField(default="", verbose_name='查询语句')
     unit = models.CharField(max_length=50, default="", verbose_name='指标单位')
     data_type = models.CharField(max_length=50, default="", verbose_name='数据类型')

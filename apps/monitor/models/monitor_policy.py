@@ -47,7 +47,7 @@ class MonitorEvent(models.Model):
     value = models.FloatField(blank=True, null=True, verbose_name='事件值')
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name='事件级别')
     content = models.TextField(blank=True, verbose_name='事件内容')
-    notice_result = models.BooleanField(default=True, verbose_name='通知结果')
+    notice_result = models.JSONField(default=list, verbose_name='通知结果')
 
 
 class MonitorAlert(TimeInfo):

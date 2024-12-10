@@ -77,14 +77,19 @@ class SyncInstance:
 
 class RuleGrouping:
     def __init__(self):
-        self.rules = MonitorInstanceGroupingRule.objects.all()
+        self.rules = MonitorInstanceGroupingRule.objects.select_related("monitor_object")
 
     def get_asso_by_condition_rule(self, rule):
         """根据条件类型规则获取关联信息"""
+        obj_metric_map = {i["name"]: i for i in MONITOR_OBJS}
+        obj_metric_map = obj_metric_map.get(rule.monitor_object.name)
+        if not obj_metric_map:
+            raise ValueError("Monitor object default metric does not exist")
+        instance_id_key = obj_metric_map["instance_id_key"]
         asso_list = []
         metrics = VictoriaMetricsAPI().query(rule.grouping_rules["query"])
         for metric_info in metrics.get("result", []):
-            instance_id = metric_info["metric"].get("instance_id")
+            instance_id = metric_info["metric"].get(instance_id_key)
             if instance_id:
                 asso_list.extend([(instance_id, i) for i in rule.organizations])
         return asso_list
