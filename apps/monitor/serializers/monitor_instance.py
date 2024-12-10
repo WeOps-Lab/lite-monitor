@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.monitor.models.monitor_policy import MonitorInstance
+from apps.monitor.models.monitor_object import MonitorInstance
 
 
 class MonitorInstanceSerializer(serializers.ModelSerializer):

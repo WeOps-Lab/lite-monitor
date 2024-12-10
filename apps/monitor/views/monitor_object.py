@@ -58,20 +58,20 @@ class MonitorObjectVieSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
-    @swagger_auto_schema(
-        operation_id="monitor_object_import",
-        operation_description="导入监控对象",
-    )
-    @action(methods=['post'], detail=False, url_path='import')
-    def import_monitor_object(self, request):
-        MonitorObjectService.import_monitor_object(request.data)
-        return WebUtils.response_success()
-
-    @swagger_auto_schema(
-        operation_id="monitor_object_export",
-        operation_description="导出监控对象",
-    )
-    @action(methods=['get'], detail=False, url_path='export/(?P<pk>[^/.]+)')
-    def export_monitor_object(self, request, pk):
-        data = MonitorObjectService.export_monitor_object(pk)
-        return WebUtils.response_success(data)
+    # @swagger_auto_schema(
+    #     operation_id="monitor_object_import",
+    #     operation_description="导入监控对象",
+    # )
+    # @action(methods=['post'], detail=False, url_path='import')
+    # def import_monitor_object(self, request):
+    #     MonitorObjectService.import_monitor_object(request.data)
+    #     return WebUtils.response_success()
+    #
+    # @swagger_auto_schema(
+    #     operation_id="monitor_object_export",
+    #     operation_description="导出监控对象",
+    # )
+    # @action(methods=['get'], detail=False, url_path='export/(?P<pk>[^/.]+)')
+    # def export_monitor_object(self, request, pk):
+    #     data = MonitorObjectService.export_monitor_object(pk)
+    #     return WebUtils.response_success(data)

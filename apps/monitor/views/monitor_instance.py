@@ -22,6 +22,8 @@ class MonitorInstanceVieSet(viewsets.ViewSet):
             openapi.Parameter("page", openapi.IN_QUERY, description="页码", type=openapi.TYPE_INTEGER),
             openapi.Parameter("page_size", openapi.IN_QUERY, description="每页数据条数", type=openapi.TYPE_INTEGER),
             openapi.Parameter("add_metrics", openapi.IN_QUERY, description="是否添加指标", type=openapi.TYPE_BOOLEAN),
+            openapi.Parameter("name", openapi.IN_QUERY, description="监控实例名称", type=openapi.TYPE_STRING),
+            openapi.Parameter("organizations", openapi.IN_QUERY, description="组织ID(多个用逗号分隔)", type=openapi.TYPE_INTEGER),
         ],
     )
     @action(methods=['get'], detail=False, url_path='(?P<monitor_object_id>[^/.]+)/list')
@@ -31,6 +33,8 @@ class MonitorInstanceVieSet(viewsets.ViewSet):
             int(monitor_object_id),
             int(page),
             int(page_size),
+            request.GET.get("name"),
+            request.GET.get("organizations",""),
             request.META.get(AUTH_TOKEN_HEADER_NAME).split("Bearer ")[-1],
             bool(request.GET.get("add_metrics", False))
         )

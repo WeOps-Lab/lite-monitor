@@ -3,6 +3,7 @@ from django.db import models
 from apps.core.models.maintainer_info import MaintainerInfo
 from apps.core.models.time_info import TimeInfo
 from apps.monitor.models.monitor_object import MonitorObject
+from apps.monitor.models.plugin import MonitorPlugin
 
 
 class MetricGroup(TimeInfo, MaintainerInfo):
@@ -19,6 +20,7 @@ class MetricGroup(TimeInfo, MaintainerInfo):
 class Metric(TimeInfo, MaintainerInfo):
 
     monitor_object = models.ForeignKey(MonitorObject, on_delete=models.CASCADE, verbose_name='指标对象')
+    monitor_plugin = models.ForeignKey(MonitorPlugin, blank=True, null=True, on_delete=models.CASCADE, verbose_name='监控插件')
     metric_group = models.ForeignKey(MetricGroup, on_delete=models.CASCADE, verbose_name='指标分组')
     name = models.CharField(max_length=100, verbose_name="指标名称")
     display_name = models.CharField(max_length=100, default="", verbose_name='指标展示名称')
