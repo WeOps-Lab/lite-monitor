@@ -47,6 +47,38 @@ MONITOR_OBJS = [
         "instance_name_key": "node",
         "supplementary_indicators": ["node_status_condition", "node_cpu_utilization", "node_memory_utilization"],
     },
+    {
+        "type": "Device",
+        "name": "Switch",
+        "default_metric": 'cw_CommonNetwork_sysUpTime_gauge{instance_type="swtich"} /60/60/24',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
+    },
+    {
+        "type": "Device",
+        "name": "Router",
+        "default_metric": 'cw_CommonNetwork_sysUpTime_gauge{instance_type="router"} /60/60/24',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
+    },
+    {
+        "type": "Device",
+        "name": "Firewall",
+        "default_metric": 'cw_CommonNetwork_sysUpTime_gauge{instance_type="firewall"} /60/60/24',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
+    },
+    {
+        "type": "Device",
+        "name": "Loadbalance",
+        "default_metric": 'cw_CommonNetwork_sysUpTime_gauge{instance_type="loadbalance"} /60/60/24',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
+    },
 ]
 
 # 监控策略的计算方法
