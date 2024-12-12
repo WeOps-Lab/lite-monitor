@@ -28,7 +28,7 @@ class MonitorPluginService:
                 name=plugin,
                 defaults=dict(name=plugin, description=desc),
             )
-            plugin_obj.monitor_object.set([monitor_obj])
+            plugin_obj.monitor_object.add(monitor_obj)
 
         old_groups = MetricGroup.objects.filter(monitor_object=monitor_obj)
         old_groups_name = {i.name for i in old_groups}
@@ -104,7 +104,7 @@ class MonitorPluginService:
 
         base_obj = MonitorPluginService.import_basic_monitor_object(base_object)
         for derivative_object in derivative_objects:
-            derivative_object["parent"] = base_obj
+            derivative_object["parent_id"] = base_obj.id
             MonitorPluginService.import_basic_monitor_object(derivative_object)
 
     @staticmethod
