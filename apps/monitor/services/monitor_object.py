@@ -1,11 +1,10 @@
 import uuid
-from turtledemo.penrose import start
 
 from django.db.models import Prefetch
 
 from apps.core.utils.keycloak_client import KeyCloakClient
 from apps.monitor.constants import MONITOR_OBJS
-from apps.monitor.models.monitor_metrics import MetricGroup, Metric
+from apps.monitor.models.monitor_metrics import Metric
 from apps.monitor.models.monitor_object import MonitorInstance, MonitorObject
 from apps.core.utils.user_group import Group
 from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
@@ -32,12 +31,6 @@ class MonitorObjectService:
                     instance_map[instance_id] = {"instance_id": instance_id, "agent_id": agent_id, "time": _time}
 
         return instance_map
-
-    @staticmethod
-    def get_object_instances(monitor_obj):
-        # todo default_metric_map 后续需要从数据库中获取
-        default_metric_map = {i["name"]: i["default_metric"] for i in MONITOR_OBJS}
-        return MonitorObjectService.get_instances_by_metric(default_metric_map[monitor_obj.name])
 
     @staticmethod
     def get_monitor_instance(monitor_object_id, page, page_size, name, organizations, token, add_metrics=False):
