@@ -79,6 +79,38 @@ MONITOR_OBJS = [
         "instance_name_key": "instance_name",
         "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
     },
+    {
+        "type": "Device",
+        "name": "Bastion Host",
+        "default_metric": 'cw_CommonNetwork_sysUpTime_gauge{instance_type="bastion_host"} /60/60/24',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
+    },
+    {
+        "type": "Device",
+        "name": "Detection Device",
+        "default_metric": 'cw_CommonNetwork_sysUpTime_gauge{instance_type="detection_device"} /60/60/24',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
+    },
+    {
+        "type": "Device",
+        "name": "Scanning Device",
+        "default_metric": 'cw_CommonNetwork_sysUpTime_gauge{instance_type="scanning_device"} /60/60/24',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
+    },
+    {
+        "type": "System",
+        "name": "Audit System",
+        "default_metric": 'cw_CommonNetwork_sysUpTime_gauge{instance_type="audit_system"} /60/60/24',
+        "instance_id_key": "instance_id",
+        "instance_name_key": "instance_name",
+        "supplementary_indicators": ["sysUpTime", "iftotalInOctets", "iftotalOutOctets"],
+    },
 ]
 
 # 监控策略的计算方法

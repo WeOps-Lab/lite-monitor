@@ -56,6 +56,7 @@ class MonitorPluginService:
             if metric["name"] in existing_metrics:
                 existing_metric = existing_metrics[metric["name"]]
                 existing_metric.metric_group_id = groups_map[metric["metric_group"]]
+                existing_metric.monitor_plugin_id = plugin_obj.id
                 existing_metric.display_name = metric["display_name"]
                 existing_metric.query = metric["query"]
                 existing_metric.unit = metric["unit"]
@@ -66,8 +67,8 @@ class MonitorPluginService:
             else:
                 metrics_to_create.append(
                     Metric(
-                        monitor_object=monitor_obj,
-                        monitor_plugin=plugin_obj,
+                        monitor_object_id=monitor_obj.id,
+                        monitor_plugin_id=plugin_obj.id,
                         metric_group_id=groups_map[metric["metric_group"]],
                         name=metric["name"],
                         display_name=metric["display_name"],
