@@ -13,12 +13,12 @@ from apps.monitor.tasks.grouping_rule import sync_instance_and_group
 class MonitorObjectService:
 
     @staticmethod
-    def get_instances_by_metric(metric: str):
+    def get_instances_by_metric(metric: str, instance_id_key: str):
         """获取监控对象实例"""
         metrics = VictoriaMetricsAPI().query(metric)
         instance_map = {}
         for metric_info in metrics.get("data", {}).get("result", []):
-            instance_id = metric_info.get("metric", {}).get("instance_id")
+            instance_id = metric_info.get("metric", {}).get(instance_id_key)
             if not instance_id:
                 continue
             agent_id = metric_info.get("metric", {}).get("agent_id")
@@ -66,7 +66,7 @@ class MonitorObjectService:
         obj_metric_map = obj_metric_map.get(monitor_obj.name)
         if not obj_metric_map:
             raise ValueError("Monitor object default metric does not exist")
-        instance_map = MonitorObjectService.get_instances_by_metric(obj_metric_map.get("default_metric", ""))
+        instance_map = MonitorObjectService.get_instances_by_metric(obj_metric_map.get("default_metric", ""), obj_metric_map.get("instance_id_key"))
         result = []
 
         for obj in objs:
