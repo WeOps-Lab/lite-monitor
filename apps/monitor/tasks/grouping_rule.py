@@ -116,7 +116,6 @@ class RuleGrouping:
                 monitor_inst_asso_set.add((instance_id, organization))
 
         # todo 过滤掉不存在的实例
-
         exist_instance_map = {(i.monitor_instance_id, i.organization): i.id for i in MonitorInstanceOrganization.objects.all()}
         create_asso_set = monitor_inst_asso_set - set(exist_instance_map.keys())
         delete_asso_set = set(exist_instance_map.keys()) - monitor_inst_asso_set

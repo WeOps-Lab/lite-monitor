@@ -123,7 +123,6 @@ class MonitorPluginService:
         else:
             return MonitorPluginService.export_basic_monitor_object(plugin_obj, monitor_objs[0], metric_map[monitor_objs[0].id])
 
-
     @staticmethod
     def export_basic_monitor_object(plugin_obj, monitor_obj, metrics):
         """导出基础监控对象"""

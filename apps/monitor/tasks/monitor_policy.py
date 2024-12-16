@@ -3,10 +3,13 @@ import logging
 from celery.app import shared_task
 from datetime import datetime, timezone
 
+from django.core.mail import send_mail
+
+from apps.core.utils.keycloak_client import KeyCloakClient
 from apps.monitor.constants import THRESHOLD_METHODS, LEVEL_WEIGHT, MONITOR_OBJS
 from apps.monitor.models import MonitorPolicy, MonitorInstanceOrganization, MonitorAlert, MonitorEvent, MonitorInstance
 from apps.monitor.utils.victoriametrics_api import VictoriaMetricsAPI
-
+from config.default import DEFAULT_FROM_EMAIL
 
 logger = logging.getLogger("app")
 
@@ -173,18 +176,39 @@ class MonitorPolicyScan:
         event_objs = MonitorEvent.objects.bulk_create(new_event_creates, batch_size=200)
         return event_objs
 
+    def get_users_email(self, usernames):
+        """获取用户邮箱"""
+        client = KeyCloakClient()
+        users = client.admin_client.get_users()
+        user_email_map = {user_info["username"]: user_info["email"] for user_info in users}
+
+        return {username: user_email_map.get(username) for username in usernames}
+
     def send_email(self, event_obj):
         """发送邮件"""
         title = f"告警通知：{self.policy.name}"
         content = f"告警内容：{event_obj.content}"
         result = []
-        for user in self.policy.notice_users:
-            # todo 发送邮件
-            try:
-                notice_result = {"user": user, "status": "success"}
-            except Exception as e:
-                notice_result = {"user": user, "status": "failed", "error": str(e)}
-            result.append(notice_result)
+        user_email_map = self.get_users_email(self.policy.notice_users)
+
+        for user, email in user_email_map.items():
+            if not email:
+                result.append({"user": user, "status": "failed", "error": "email not found"})
+                continue
+            else:
+                result.append({"user": user, "status": "success"})
+
+        try:
+            send_mail(
+                subject=title,
+                message=content,
+                from_email=DEFAULT_FROM_EMAIL,
+                recipient_list=[email for email in user_email_map.values() if email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.error(f"send email failed: {e}")
+
         return result
 
     def notice(self, event_objs):
