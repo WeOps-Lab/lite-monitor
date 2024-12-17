@@ -8,6 +8,7 @@ from apps.monitor.models.plugin import MonitorPlugin
 
 class MetricGroup(TimeInfo, MaintainerInfo):
     monitor_object = models.ForeignKey(MonitorObject, on_delete=models.CASCADE, verbose_name='指标对象')
+    monitor_plugin = models.ForeignKey(MonitorPlugin, blank=True, null=True, on_delete=models.CASCADE, verbose_name='监控插件')
     name = models.CharField(max_length=100, verbose_name='指标分组名称')
     description = models.TextField(blank=True, null=True, verbose_name='指标分组描述')
     is_pre = models.BooleanField(default=True, verbose_name='是否预定义')

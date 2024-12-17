@@ -37,6 +37,7 @@ class MonitorPluginService:
         create_metric_group = [
             MetricGroup(
                 monitor_object=monitor_obj,
+                monitor_plugin=plugin_obj,
                 name=name,
             ) for name in new_groups_name
         ]
