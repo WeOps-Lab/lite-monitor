@@ -1,7 +1,9 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
+from apps.core.utils.web_utils import WebUtils
 from apps.monitor.filters.monitor_metrics import MetricGroupFilter, MetricFilter
+from apps.monitor.language.service import SettingLanguage
 from apps.monitor.serializers.monitor_metrics import MetricGroupSerializer, MetricSerializer
 from apps.monitor.models.monitor_metrics import MetricGroup, Metric
 from config.drf.pagination import CustomPageNumberPagination
@@ -18,7 +20,13 @@ class MetricGroupVieSet(viewsets.ModelViewSet):
         operation_description="指标分组列表",
     )
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        results = serializer.data
+        lan = SettingLanguage(request.user.locale)
+        for result in results:
+            result["display_name"] = lan.get_val("MONITOR_OBJECT_METRIC_GROUP", result["name"]) or result["name"]
+        return WebUtils.response_success(results)
 
     @swagger_auto_schema(
         operation_id="metrics_group_create",
@@ -67,7 +75,17 @@ class MetricVieSet(viewsets.ModelViewSet):
         operation_description="指标列表",
     )
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        results = serializer.data
+        lan = SettingLanguage(request.user.locale)
+        for result in results:
+            metric_map = lan.get_val("MONITOR_OBJECT_METRIC", result["name"])
+            if not metric_map:
+                metric_map = {}
+            result["display_name"] = metric_map.get("name") or result["name"]
+            result["display_description"] = metric_map.get("desc") or result["description"]
+        return WebUtils.response_success(results)
 
     @swagger_auto_schema(
         operation_id="metrics_create",

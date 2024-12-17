@@ -10,6 +10,7 @@ class MetricGroup(TimeInfo, MaintainerInfo):
     monitor_object = models.ForeignKey(MonitorObject, on_delete=models.CASCADE, verbose_name='指标对象')
     name = models.CharField(max_length=100, verbose_name='指标分组名称')
     description = models.TextField(blank=True, null=True, verbose_name='指标分组描述')
+    is_pre = models.BooleanField(default=True, verbose_name='是否预定义')
 
     class Meta:
         verbose_name = '指标分组'
@@ -25,10 +26,11 @@ class Metric(TimeInfo, MaintainerInfo):
     name = models.CharField(max_length=100, verbose_name="指标名称")
     display_name = models.CharField(max_length=100, default="", verbose_name='指标展示名称')
     query = models.TextField(default="", verbose_name='查询语句')
-    unit = models.CharField(max_length=50, default="", verbose_name='指标单位')
+    unit = models.TextField(default="", verbose_name='指标单位')
     data_type = models.CharField(max_length=50, default="", verbose_name='数据类型')
     description = models.TextField(blank=True, null=True, verbose_name='指标描述')
     dimensions = models.JSONField(default=list, verbose_name='维度')
+    is_pre = models.BooleanField(default=True, verbose_name='是否预定义')
 
     class Meta:
         unique_together = ('monitor_object', 'name')

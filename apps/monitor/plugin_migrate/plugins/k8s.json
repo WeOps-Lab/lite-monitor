@@ -1,0 +1,196 @@
+{
+  "plugin":"K8S Template",
+  "plugin_desc":"The K8S monitoring plugin is used to monitor the status and health of Kubernetes clusters, including the performance metrics of nodes, containers, and pods.",
+  "is_compound_object": true,
+  "objects": [
+    {
+      "name": "Cluster",
+      "type": "K8S",
+      "level": "base",
+      "description": "",
+      "metrics": [
+        {
+          "metric_group": "Counts",
+          "name": "cluster_pod_count",
+          "query": "count(kube_pod_info_gauge)",
+          "display_name": "Pod Count",
+          "data_type": "Number",
+          "unit": "short",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "It is used to count the total number of Pods currently present in the Kubernetes cluster. This metric returns the count of Pods running in the cluster, including those across all namespaces."
+      },
+      {
+          "metric_group": "Counts",
+          "name": "cluster_node_count",
+          "query": "count(kube_node_info_gauge)",
+          "display_name": "Node Count",
+          "data_type": "Number",
+          "unit": "short",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "It is used to count the total number of nodes currently available in the Kubernetes cluster. This metric returns the number of nodes in the cluster, helping users understand the scale and resources of the cluster."
+      },
+      {
+          "metric_group": "CPU",
+          "name": "cluster_cpu_utilization",
+          "query": "sum(rate(container_cpu_usage_seconds_total_counter{__labels__}[5m])) / sum(kube_node_status_capacity_gauge{__labels__, resource=\"cpu\"}) * 100",
+          "display_name": "CPU Utilization",
+          "data_type": "Number",
+          "unit": "percent",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Represents the current CPU utilization of the cluster, typically expressed as a percentage."
+      },
+      {
+          "metric_group": "Memory",
+          "name": "cluster_memory_utilization",
+          "query": "sum(container_memory_usage_bytes_gauge{__labels__}) / sum(kube_node_status_capacity_gauge{__labels__, resource=\"memory\"}) * 100",
+          "display_name": "Memory Utilization",
+          "data_type": "Number",
+          "unit": "percent",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Shows the current memory utilization of the cluster, expressed as a percentage."
+      }
+      ]
+    },
+    {
+      "name": "Pod",
+      "type": "K8S",
+      "level": "derivative",
+      "description": "",
+      "metrics": [
+        {
+          "metric_group": "Status",
+          "name": "pod_status",
+          "query": "kube_pod_status_phase_gauge{__$labels__} == 1",
+          "display_name": "Pod Status",
+          "data_type": "Enum",
+          "unit": "none",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Retrieves the current status of the Pod, such as Running, Stopped, etc."
+      },
+      {
+          "metric_group": "Status",
+          "name": "pod_restart_count",
+          "query": "kube_pod_container_status_restarts_total_counter{__$labels__}",
+          "display_name": "Restart Count",
+          "data_type": "Number",
+          "unit": "short",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Monitors the restart counts of containers in the Pod to assess stability and frequency of issues."
+      },
+      {
+          "metric_group": "CPU",
+          "name": "pod_cpu_utilization",
+          "query": "(sum(rate(container_cpu_usage_seconds_total_counter{__$labels__}[1m])) / (sum(kube_pod_container_resource_limits_gauge{__$labels__, resource=\"cpu\"}) * 60)) * 100",
+          "display_name": "CPU Utilization",
+          "data_type": "Number",
+          "unit": "percent",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Calculates the CPU utilization of a Pod, reflecting the difference between container CPU limits and requests."
+      },
+      {
+          "metric_group": "Memory",
+          "name": "pod_memory_utilization",
+          "query": "(sum(container_memory_usage_bytes_gauge{__$labels__}) / sum(kube_pod_container_resource_limits_gauge{__$labels__, resource=\"memory\"})) * 100",
+          "display_name": "Memory Utilization",
+          "data_type": "Number",
+          "unit": "percent",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Calculates the memory utilization of the Pod as a ratio of memory limits to requests."
+      },
+      {
+          "metric_group": "Disk",
+          "name": "pod_io_writes",
+          "query": "sum(rate(container_fs_writes_total_counter{__$labels__}))",
+          "display_name": "I/O Write Rate",
+          "data_type": "Number",
+          "unit": "short",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "This metric represents the number of I/O write operations performed by a specific Pod over a specified time period. The write count can help analyze the write demands of the application on the storage system."
+      },
+      {
+          "metric_group": "Disk",
+          "name": "pod_io_read",
+          "query": "sum(rate(container_fs_reads_total_counter{__$labels__}))",
+          "display_name": "I/O Read Rate",
+          "data_type": "Number",
+          "unit": "short",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "This metric represents the number of I/O read operations performed by a specific Pod over a specified time period. The read count can help analyze the read demands of the application on the storage system."
+      },
+      {
+          "metric_group": "Network",
+          "name": "pod_network_in",
+          "query": "sum(rate(container_network_receive_bytes_total_counter{__$labels__}))",
+          "display_name": "Network In",
+          "data_type": "Number",
+          "unit": "Bytes/s",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Monitors the inbound network traffic of a Pod, calculated based on the number of containers and IPs."
+      },
+      {
+          "metric_group": "Network",
+          "name": "pod_network_out",
+          "query": "sum(rate(container_network_transmit_bytes_total_counter{__$labels__}))",
+          "display_name": "Network Out",
+          "data_type": "Number",
+          "unit": "Bytes/s",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Monitors the outbound network traffic of a Pod, calculated based on the number of containers and IPs."
+      }
+          ]
+    },
+    {
+      "name": "Node",
+      "type": "K8S",
+      "level": "derivative",
+      "description": "",
+      "metrics": [
+        {
+          "metric_group": "Status",
+          "name": "node_status_condition",
+          "query": "kube_node_status_condition_gauge{__$labels__} == 1",
+          "display_name": "Node Status",
+          "data_type": "Enum",
+          "unit": "none",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Represents the status conditions of the node, which may include states like Ready, NotReady, etc. This is a standard metric to determine the health and availability of nodes in the cluster."
+      },
+      {
+          "metric_group": "CPU",
+          "name": "node_cpu_utilization",
+          "query": "(sum(kube_pod_container_resource_requests_gauge{__$labels__, resource=\"cpu\"}) + sum(kube_pod_container_resource_limits_gauge{__$labels__, resource=\"cpu\"})) / sum(kube_node_status_allocatable_gauge{__$labels__, resource=\"cpu\"}) * 100",
+          "display_name": "CPU Utilization",
+          "data_type": "Number",
+          "unit": "percent",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Node CPU utilization indicates the current usage of CPU on the node, typically expressed as a percentage."
+      },
+      {
+          "metric_group": "Memory",
+          "name": "node_memory_utilization",
+          "query": "(sum(kube_pod_container_resource_requests_gauge{__$labels__, resource=\"memory\"}) + sum(kube_pod_container_resource_limits_gauge{__$labels__, resource=\"memory\"})) / sum(kube_node_status_allocatable_gauge{__$labels__, resource=\"memory\"}) * 100",
+          "display_name": "Memory Utilization",
+          "data_type": "Number",
+          "unit": "percent",
+          "dimensions": [],
+          "type": "gauge",
+          "description": "Node memory utilization shows the current usage of memory on the node, also expressed as a percentage."
+      }
+          ]
+    }
+  ]
+}

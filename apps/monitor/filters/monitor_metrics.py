@@ -7,6 +7,7 @@ class MetricGroupFilter(FilterSet):
     monitor_object_name = CharFilter(field_name="monitor_object__name", lookup_expr="exact", label="指标对象名称")
     monitor_object_id = CharFilter(field_name="monitor_object_id", lookup_expr="exact", label="指标对象ID")
 
+
     class Meta:
         model = MetricGroup
         fields = ["monitor_object_name", "monitor_object_id"]

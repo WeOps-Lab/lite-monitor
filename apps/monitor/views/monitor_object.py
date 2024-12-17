@@ -1,12 +1,11 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
-from rest_framework.decorators import action
 
 from apps.core.utils.web_utils import WebUtils
 from apps.monitor.filters.monitor_object import MonitorObjectFilter
+from apps.monitor.language.service import SettingLanguage
 from apps.monitor.models.monitor_object import MonitorObject
 from apps.monitor.serializers.monitor_object import MonitorObjectSerializer
-from apps.monitor.services.monitor_object import MonitorObjectService
 from config.drf.pagination import CustomPageNumberPagination
 
 
@@ -21,7 +20,14 @@ class MonitorObjectVieSet(viewsets.ModelViewSet):
         operation_description="监控对象列表",
     )
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        results = serializer.data
+        lan = SettingLanguage(request.user.locale)
+        for result in results:
+            result["display_type"] = lan.get_val("MONITOR_OBJECT_TYPE", result["type"]) or result["type"]
+            result["display_name"] = lan.get_val("MONITOR_OBJECT", result["name"]) or result["name"]
+        return WebUtils.response_success(results)
 
     @swagger_auto_schema(
         operation_id="monitor_object_create",

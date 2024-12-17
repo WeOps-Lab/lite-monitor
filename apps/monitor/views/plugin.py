@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 
 from apps.core.utils.web_utils import WebUtils
 from apps.monitor.filters.plugin import MonitorPluginFilter
+from apps.monitor.language.service import SettingLanguage
 from apps.monitor.models import MonitorPlugin
 from apps.monitor.serializers.pligin import MonitorPluginSerializer
 from apps.monitor.services.plugin import MonitorPluginService
@@ -21,7 +22,17 @@ class MonitorPluginVieSet(viewsets.ModelViewSet):
         operation_description="监控插件列表",
     )
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        results = serializer.data
+        lan = SettingLanguage(request.user.locale)
+        for result in results:
+            plugin_map = lan.get_val("MONITOR_OBJECT_PLUGIN", result["name"])
+            if not plugin_map:
+                plugin_map = {}
+            result["display_name"] = plugin_map.get("name") or result["name"]
+            result["display_description"] = plugin_map.get("desc") or result["description"]
+        return WebUtils.response_success(results)
 
     @swagger_auto_schema(
         operation_id="monitor_plugin_create",
