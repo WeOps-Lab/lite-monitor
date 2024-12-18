@@ -310,9 +310,9 @@ class MonitorPolicyScan:
                         alert.content = event_obj.content
                         alert_level_updates.append(alert)
         if alert_level_updates:
-            MonitorAlert.objects.bulk_update(alert_level_updates, ["level"], batch_size=200)
+            MonitorAlert.objects.bulk_update(alert_level_updates, ["level", "value", "content"], batch_size=200)
         if recovery_alerts:
-            MonitorAlert.objects.bulk_update(recovery_alerts, ["status", "end_event_id", "end_event_time"], batch_size=200)
+            MonitorAlert.objects.bulk_update(recovery_alerts, ["status", "end_event_id", "end_event_time", "operator"], batch_size=200)
 
     def create_alert(self, event_objs):
         """告警生成处理"""
