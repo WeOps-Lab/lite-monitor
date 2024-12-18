@@ -10,7 +10,7 @@ class MetricGroupFilter(FilterSet):
 
     class Meta:
         model = MetricGroup
-        fields = ["monitor_object_name", "monitor_object_id"]
+        fields = ["monitor_object_name", "monitor_object_id", "monitor_plugin_id"]
 
 
 class MetricFilter(FilterSet):
