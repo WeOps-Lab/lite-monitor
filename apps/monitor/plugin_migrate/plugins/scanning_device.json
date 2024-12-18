@@ -1,7 +1,7 @@
 {
-  "plugin": "Firewall SNMP General",
-  "plugin_desc": "The SNMP general plugin is used to monitor and manage the status of firewall through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency.",
-  "name": "Firewall",
+  "plugin": "Scanning Device SNMP General",
+  "plugin_desc": "The SNMP general plugin is used to monitor and manage the status of scanning device through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency.",
+  "name": "Scanning Device",
   "type": "Device",
   "description": "",
   "metrics":

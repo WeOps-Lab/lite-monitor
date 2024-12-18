@@ -50,7 +50,7 @@ class MonitorPluginService:
         metrics_to_create = []
         existing_metrics = {
             metric.name: metric
-            for metric in Metric.objects.filter(monitor_object=monitor_obj, monitor_plugin=plugin_obj)
+            for metric in Metric.objects.filter(monitor_object=monitor_obj)
         }
 
         for metric in metrics:

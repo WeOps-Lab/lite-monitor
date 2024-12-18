@@ -1,6 +1,6 @@
 {
-  "plugin": "Router SNMP General Template",
-  "plugin_desc": "The SNMP general template is used to monitor and manage the status of routers through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency.",
+  "plugin": "Router SNMP General",
+  "plugin_desc": "The SNMP general plugin is used to monitor and manage the status of routers through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency.",
   "name": "Router",
   "type": "Device",
   "description": "",
@@ -9,7 +9,7 @@
         {
             "metric_group": "Base",
             "name": "sysUpTime",
-            "query": "cw_CommonNetwork_sysUpTime_gauge{__$labels__} / 60 / 60 / 24",
+            "query": "sum(cw_CommonNetwork_sysUpTime_gauge{__$labels__}) by (instance_id) / 60 / 60 / 24",
             "display_name": "System Uptime",
             "unit": "d",
             "data_type": "Number",
@@ -21,7 +21,7 @@
             "name": "ifAdminStatus",
             "query": "cw_CommonNetwork_ifAdminStatus_gauge{__$labels__}",
             "display_name": "Interface Admin Status",
-            "unit": "",
+            "unit": "[{'id': '1', 'name': 'up'},{'id': '2', 'name': 'down'},{'id': '3', 'name': 'testing'}]",
             "data_type": "Enum",
             "description": "This metric indicates the administrative status of the network switch interface. It serves to indicate whether the interface is enabled (up) or disabled (down) by an administrator, along with other states such as testing or not present. This information is vital for network management and troubleshooting.",
             "dimensions": [
@@ -36,7 +36,7 @@
             "name": "ifOperStatus",
             "query": "cw_CommonNetwork_ifOperStatus_gauge{__$labels__}",
             "display_name": "Interface Oper Status",
-            "unit": "",
+            "unit": "[{'id': '1', 'name': 'up'},{'id': '2', 'name': 'down'},{'id': '3', 'name': 'testing'}]",
             "data_type": "Enum",
             "description": "This metric reflects the actual operational status of the network switch interface, indicating whether the interface is operational. Unlike the administrative status, the operational status shows whether the interface can successfully receive and send traffic, which is crucial for monitoring network health.",
             "dimensions": [
@@ -244,7 +244,7 @@
         {
             "metric_group": "Traffic",
             "name": "iftotalInOctets",
-            "query": "sum(rate(cw_CommonNetwork_ifInOctets_counter{__$labels__}[5m]) / 1024 / 1024)",
+            "query": "sum(rate(cw_CommonNetwork_ifInOctets_counter{__$labels__}[5m]) / 1024 / 1024)by (instance_id)",
             "display_name": "Device Total Incoming Traffic (per second)",
             "unit": "MBs",
             "data_type": "Number",
@@ -254,7 +254,7 @@
         {
             "metric_group": "Traffic",
             "name": "iftotalOutOctets",
-            "query": "sum(rate(cw_CommonNetwork_ifInOctets_counter{__$labels__}[5m]) / 1024 / 1024)",
+            "query": "sum(rate(cw_CommonNetwork_ifInOctets_counter{__$labels__}[5m]) / 1024 / 1024) by (instance_id)",
             "display_name": "Device Total Outgoing Traffic (per second)",
             "unit": "MBs",
             "data_type": "Number",

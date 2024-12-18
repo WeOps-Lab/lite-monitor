@@ -1,15 +1,17 @@
 {
+  "plugin": "Website Template",
+  "plugin_desc": "The purpose of the website monitoring plugin is to periodically check the availability and performance of HTTP/HTTPS connections.",
   "name": "Website",
   "type": "Web",
-  "description": "The purpose of the website monitoring HTTP plugin is to periodically check the availability and performance of HTTP/HTTPS connections.",
+  "description": "",
   "metrics": [
     {
       "metric_group": "HTTP",
       "name": "http_success.rate",
       "display_name": "Probe Status",
       "type": "gauge",
-      "query": "probe_success_gauge{__$labels__}",
-      "unit": "none",
+      "query": "sum(probe_success_gauge{__$labels__}) by (instance_id)",
+      "unit": "[{'id': '1', 'name': 'success'},{'id': '0', 'name': 'failure'}]",
       "data_type": "Enum",
       "description": "This metric indicates the success status of the probe operation. A successful status is represented by 1, while a failure is represented by 0. Monitoring this metric is crucial for ensuring the availability of the system, as it provides a quick indication of the health status of the monitored target. If the value is 0, further investigation is needed to determine the cause of the failure.",
       "dimensions": []
@@ -19,7 +21,7 @@
       "name": "http_total.duration",
       "display_name": "HTTP Duration",
       "type": "gauge",
-      "query": "probe_http_duration_seconds_gauge{__$labels__}",
+      "query": "sum(probe_http_duration_seconds_gauge{phase=~'connect|resolve|tls|processing|transfer',__$labels__}) by (instance_id)",
       "unit": "s",
       "data_type": "Number",
       "description": "This metric represents the total time taken from initiating an HTTP request to receiving the HTTP response. It is used to assess the performance of web services, especially when handling user requests. An extended duration may indicate lower backend processing efficiency or network latency, which can adversely affect the user experience. It is crucial for enhancing system responsiveness and optimizing performance.",
@@ -42,7 +44,7 @@
       "display_name": "HTTP SSL",
       "type": "gauge",
       "query": "probe_http_ssl_gauge{__$labels__}",
-      "unit": "none",
+      "unit": "[{'id': '1', 'name': 'success'},{'id': '0', 'name': 'failure'}]",
       "data_type": "Enum",
       "description": "This metric represents the status of the SSL/TLS connection during an HTTP request. A value of 1 indicates that the connection was successful and encrypted using SSL/TLS, while a value of 0 indicates that encryption is not in use or that the connection has failed. It is commonly used to monitor and confirm whether a web service is securely delivered over SSL/TLS.",
       "dimensions": []
