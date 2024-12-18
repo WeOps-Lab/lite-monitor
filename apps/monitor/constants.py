@@ -35,8 +35,8 @@ MONITOR_OBJS = [
         "type": "K8S",
         "name": "Pod",
         "default_metric": 'kube_pod_container_info_gauge',
-        "instance_id_key": "uid",
-        "instance_name_key": "pod",
+        "instance_id_key": "name",
+        "instance_name_key": "container_label_io_kubernetes_pod_name",
         "supplementary_indicators": ["pod_status", "pod_cpu_utilization","pod_memory_utilization"],
     },
     {
