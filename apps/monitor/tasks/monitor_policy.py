@@ -32,6 +32,46 @@ def scan_policy_task(policy_id):
 
     logger.info("end to update monitor instance grouping rule")
 
+
+def new_value(metric_query, range_time, group_by):
+    query = f"any(last_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query(query)
+    return metrics
+
+
+def max_value(metric_query, range_time, group_by):
+    query = f"any(max_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query(query)
+    return metrics
+
+
+def min_value(metric_query, range_time, group_by):
+    query = f"any(min_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query(query)
+    return metrics
+
+
+def avg_value(metric_query, range_time, group_by):
+    query = f"any(avg_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query(query)
+    return metrics
+
+
+def sum_value(metric_query, range_time, group_by):
+    query = f"any(sum_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query(query)
+    return metrics
+
+
+METHOD = {
+    "sum": sum_value,
+    "avg": avg_value,
+    "max": max_value,
+    "min": min_value,
+    "new": new_value,
+}
+
+
 class MonitorPolicyScan:
     def __init__(self, policy):
         self.policy = policy
@@ -80,8 +120,6 @@ class MonitorPolicyScan:
 
     def query_aggregration_metrics(self):
         """查询指标"""
-        end_timestamp = int(datetime.now(timezone.utc).timestamp())
-        start_timestamp = end_timestamp - self.policy.period
         query = self.policy.metric.query
         # 实例条件
         instances_str = "|".join(self.instances_map.keys())
@@ -94,10 +132,11 @@ class MonitorPolicyScan:
         if label_str.endswith(","):
             label_str = label_str[:-1]
         query = query.replace("__$labels__", label_str)
-        group_by_str = f" by ({','.join(self.policy.group_by)})" if self.policy.group_by else ""
-        aggr_query = f"{self.policy.algorithm}({query}){group_by_str}"
-        metrics = VictoriaMetricsAPI().query(aggr_query, start_timestamp, end_timestamp)
-        return metrics
+
+        method = METHOD.get(self.policy.algorithm)
+        if not method:
+            raise ValueError("invalid algorithm method")
+        return method(query, int(self.policy.period/60), ",".join(self.policy.group_by))
 
     def set_monitor_obj_instance_key(self):
         """获取监控对象实例key"""
