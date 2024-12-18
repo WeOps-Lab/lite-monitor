@@ -16,6 +16,8 @@ class MonitorPolicyVieSet(viewsets.ModelViewSet):
     pagination_class = CustomPageNumberPagination
 
     def create(self, request, *args, **kwargs):
+        # 补充创建人
+        request.data['created_by'] = request.user.username
         response = super().create(request, *args, **kwargs)
         policy_id = response.data['id']
         schedule = request.data.get('schedule')
@@ -23,6 +25,8 @@ class MonitorPolicyVieSet(viewsets.ModelViewSet):
         return response
 
     def update(self, request, *args, **kwargs):
+        # 补充更新人
+        request.data['updated_by'] = request.user.username
         response = super().update(request, *args, **kwargs)
         policy_id = kwargs['pk']
         schedule = request.data.get('schedule')
@@ -31,6 +35,8 @@ class MonitorPolicyVieSet(viewsets.ModelViewSet):
         return response
 
     def partial_update(self, request, *args, **kwargs):
+        # 补充更新人
+        request.data['updated_by'] = request.user.username
         response = super().partial_update(request, *args, **kwargs)
         policy_id = kwargs['pk']
         schedule = request.data.get('schedule')

@@ -1,9 +1,11 @@
+from django.db.models import Count
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
 from apps.core.utils.web_utils import WebUtils
 from apps.monitor.filters.monitor_object import MonitorObjectFilter
 from apps.monitor.language.service import SettingLanguage
+from apps.monitor.models import MonitorInstance
 from apps.monitor.models.monitor_object import MonitorObject
 from apps.monitor.serializers.monitor_object import MonitorObjectSerializer
 from config.drf.pagination import CustomPageNumberPagination
@@ -27,6 +29,13 @@ class MonitorObjectVieSet(viewsets.ModelViewSet):
         for result in results:
             result["display_type"] = lan.get_val("MONITOR_OBJECT_TYPE", result["type"]) or result["type"]
             result["display_name"] = lan.get_val("MONITOR_OBJECT", result["name"]) or result["name"]
+
+        if request.GET.get("add_instance_count") in ["true", "True"]:
+            count_data = MonitorObject.objects.values('monitor_instance_id').annotate(instance_count=Count('id'))
+            count_map = {i["monitor_instance_id"]: i["instance_count"] for i in count_data}
+            for result in results:
+                result["instance_count"] = count_map.get(result["id"], 0)
+
         return WebUtils.response_success(results)
 
     @swagger_auto_schema(
