@@ -12,6 +12,7 @@ class MetricGroup(TimeInfo, MaintainerInfo):
     name = models.CharField(max_length=100, verbose_name='指标分组名称')
     description = models.TextField(blank=True, null=True, verbose_name='指标分组描述')
     is_pre = models.BooleanField(default=True, verbose_name='是否预定义')
+    sort_order = models.IntegerField(default=0, verbose_name='排序')
 
     class Meta:
         verbose_name = '指标分组'
@@ -32,6 +33,7 @@ class Metric(TimeInfo, MaintainerInfo):
     description = models.TextField(blank=True, null=True, verbose_name='指标描述')
     dimensions = models.JSONField(default=list, verbose_name='维度')
     is_pre = models.BooleanField(default=True, verbose_name='是否预定义')
+    sort_order = models.IntegerField(default=0, verbose_name='排序')
 
     class Meta:
         unique_together = ('monitor_object', 'name')

@@ -113,15 +113,6 @@ MONITOR_OBJS = [
     },
 ]
 
-# 监控策略的计算方法
-POLICY_METHODS = {
-    "sum": sum,
-    "avg": lambda x: sum(x) / len(x),
-    "max": max,
-    "min": min,
-    "count": len,
-}
-
 # 阀值对比方法
 THRESHOLD_METHODS = {
     ">": lambda x, y: x > y,

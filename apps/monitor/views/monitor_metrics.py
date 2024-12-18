@@ -1,5 +1,7 @@
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
+from rest_framework.decorators import action
 
 from apps.core.utils.web_utils import WebUtils
 from apps.monitor.filters.monitor_metrics import MetricGroupFilter, MetricFilter
@@ -10,7 +12,7 @@ from config.drf.pagination import CustomPageNumberPagination
 
 
 class MetricGroupVieSet(viewsets.ModelViewSet):
-    queryset = MetricGroup.objects.all()
+    queryset = MetricGroup.objects.all().order_by("sort_order")
     serializer_class = MetricGroupSerializer
     filterset_class = MetricGroupFilter
     pagination_class = CustomPageNumberPagination
@@ -63,9 +65,35 @@ class MetricGroupVieSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
+    @swagger_auto_schema(
+        operation_id="metrics_group_set_order",
+        operation_description="指标分组排序",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER, description="指标分组ID"),
+                    "sort_order": openapi.Schema(type=openapi.TYPE_INTEGER, description="排序"),
+                }
+            )
+        )
+    )
+    @action(detail=False, methods=["post"])
+    def set_order(self, request, *args, **kwargs):
+        updates = [
+            MetricGroup(
+                id=item["id"],
+                sort_order=item["sort_order"],
+            )
+            for item in request.data
+        ]
+        MetricGroup.objects.bulk_update(updates, ["sort_order"], batch_size=200)
+        return WebUtils.response_success()
+
 
 class MetricVieSet(viewsets.ModelViewSet):
-    queryset = Metric.objects.all()
+    queryset = Metric.objects.all().order_by("sort_order")
     serializer_class = MetricSerializer
     filterset_class = MetricFilter
     pagination_class = CustomPageNumberPagination
@@ -121,3 +149,29 @@ class MetricVieSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_id="metrics_set_order",
+        operation_description="指标排序",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER, description="指标分组ID"),
+                    "sort_order": openapi.Schema(type=openapi.TYPE_INTEGER, description="排序"),
+                }
+            )
+        )
+    )
+    @action(detail=False, methods=["post"])
+    def set_order(self, request, *args, **kwargs):
+        updates = [
+            Metric(
+                id=item["id"],
+                sort_order=item["sort_order"],
+            )
+            for item in request.data
+        ]
+        Metric.objects.bulk_update(updates, ["sort_order"], batch_size=200)
+        return WebUtils.response_success()
