@@ -34,31 +34,31 @@ def scan_policy_task(policy_id):
 
 
 def new_value(metric_query, range_time, group_by):
-    query = f"any(last_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    query = f"any(last_over_time({metric_query}[{range_time}])) by ({group_by})"
     metrics = VictoriaMetricsAPI().query(query)
     return metrics
 
 
 def max_value(metric_query, range_time, group_by):
-    query = f"any(max_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    query = f"any(max_over_time({metric_query}[{range_time}])) by ({group_by})"
     metrics = VictoriaMetricsAPI().query(query)
     return metrics
 
 
 def min_value(metric_query, range_time, group_by):
-    query = f"any(min_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    query = f"any(min_over_time({metric_query}[{range_time}])) by ({group_by})"
     metrics = VictoriaMetricsAPI().query(query)
     return metrics
 
 
 def avg_value(metric_query, range_time, group_by):
-    query = f"any(avg_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    query = f"any(avg_over_time({metric_query}[{range_time}])) by ({group_by})"
     metrics = VictoriaMetricsAPI().query(query)
     return metrics
 
 
 def sum_value(metric_query, range_time, group_by):
-    query = f"any(sum_over_time({metric_query}[{range_time}m])) by ({group_by})"
+    query = f"any(sum_over_time({metric_query}[{range_time}])) by ({group_by})"
     metrics = VictoriaMetricsAPI().query(query)
     return metrics
 
@@ -118,6 +118,19 @@ class MonitorPolicyScan:
         # 使用逗号连接多个条件
         return ",".join(vm_filters)
 
+    def for_mat_period(self):
+        """格式化周期"""
+        if not self.policy.period:
+            raise ValueError("policy period is empty")
+        if self.policy.period["type"] == "min":
+            return f'{self.policy.period["value"]}{"m"}'
+        elif self.policy.period["type"] == "hour":
+            return f'{self.policy.period["value"]}{"h"}'
+        elif self.policy.period["type"] == "day":
+            return f'{self.policy.period["value"]}{"d"}'
+        else:
+            raise ValueError(f"invalid period type: {self.policy.period['type']}")
+
     def query_aggregration_metrics(self):
         """查询指标"""
         query = self.policy.metric.query
@@ -134,9 +147,10 @@ class MonitorPolicyScan:
         query = query.replace("__$labels__", label_str)
 
         method = METHOD.get(self.policy.algorithm)
+        range_time = self.for_mat_period()
         if not method:
             raise ValueError("invalid algorithm method")
-        return method(query, int(self.policy.period/60), ",".join(self.policy.group_by))
+        return method(query, range_time, ",".join(self.policy.group_by))
 
     def set_monitor_obj_instance_key(self):
         """获取监控对象实例key"""

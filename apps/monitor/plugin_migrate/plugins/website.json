@@ -11,7 +11,7 @@
       "display_name": "Probe Status",
       "type": "gauge",
       "query": "sum(probe_success_gauge{__$labels__}) by (instance_id)",
-      "unit": "[{'id': '1', 'name': 'success'},{'id': '0', 'name': 'failure'}]",
+      "unit": "[{\"name\":\"success\",\"id\":1},{\"name\":\"failure\",\"id\":0}]",
       "data_type": "Enum",
       "description": "This metric indicates the success status of the probe operation. A successful status is represented by 1, while a failure is represented by 0. Monitoring this metric is crucial for ensuring the availability of the system, as it provides a quick indication of the health status of the monitored target. If the value is 0, further investigation is needed to determine the cause of the failure.",
       "dimensions": []
@@ -44,7 +44,7 @@
       "display_name": "HTTP SSL",
       "type": "gauge",
       "query": "probe_http_ssl_gauge{__$labels__}",
-      "unit": "[{'id': '1', 'name': 'success'},{'id': '0', 'name': 'failure'}]",
+      "unit": "[{\"name\":\"success\",\"id\":1},{\"name\":\"failure\",\"id\":0}]",
       "data_type": "Enum",
       "description": "This metric represents the status of the SSL/TLS connection during an HTTP request. A value of 1 indicates that the connection was successful and encrypted using SSL/TLS, while a value of 0 indicates that encryption is not in use or that the connection has failed. It is commonly used to monitor and confirm whether a web service is securely delivered over SSL/TLS.",
       "dimensions": []
@@ -56,7 +56,7 @@
       "type": "gauge",
       "query": "probe_http_status_code_gauge{__$labels__}",
       "unit": "none",
-      "data_type": "Enum",
+      "data_type": "Number",
       "description": "This metric represents the HTTP response status code for an HTTP request. It captures the value of the HTTP response status codes, such as 200 (OK), 404 (Not Found), 500 (Internal Server Error), etc. These status codes are vital for monitoring the health and performance of web applications, assisting in identifying potential issues.",
       "dimensions": []
     },
