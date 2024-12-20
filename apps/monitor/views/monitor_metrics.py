@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from apps.core.utils.web_utils import WebUtils
 from apps.monitor.filters.monitor_metrics import MetricGroupFilter, MetricFilter
 from apps.monitor.language.service import SettingLanguage
+from apps.monitor.models import MonitorObject
 from apps.monitor.serializers.monitor_metrics import MetricGroupSerializer, MetricSerializer
 from apps.monitor.models.monitor_metrics import MetricGroup, Metric
 from config.drf.pagination import CustomPageNumberPagination
@@ -26,8 +27,17 @@ class MetricGroupVieSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         results = serializer.data
         lan = SettingLanguage(request.user.locale)
+        monitor_object_name = None
         for result in results:
-            result["display_name"] = lan.get_val("MONITOR_OBJECT_METRIC_GROUP", result["name"]) or result["name"]
+            if monitor_object_name is None:
+                monitor_object = MonitorObject.objects.filter(id=result["monitor_object_id"]).first()
+                if monitor_object:
+                    monitor_object_name = monitor_object.name
+            if monitor_object_name:
+                metric_group_map = lan.get_val("MONITOR_OBJECT_METRIC_GROUP", monitor_object_name)
+                if not metric_group_map:
+                    metric_group_map = {}
+                result["display_name"] = metric_group_map.get("name") or result["name"]
         return WebUtils.response_success(results)
 
     @swagger_auto_schema(
@@ -107,12 +117,18 @@ class MetricVieSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         results = serializer.data
         lan = SettingLanguage(request.user.locale)
+        monitor_object_name = None
         for result in results:
-            metric_map = lan.get_val("MONITOR_OBJECT_METRIC", result["name"])
-            if not metric_map:
-                metric_map = {}
-            result["display_name"] = metric_map.get("name") or result["name"]
-            result["display_description"] = metric_map.get("desc") or result["description"]
+            if monitor_object_name is None:
+                monitor_object = MonitorObject.objects.filter(id=result["monitor_object_id"]).first()
+                if monitor_object:
+                    monitor_object_name = monitor_object.name
+            if monitor_object_name:
+                metric_map = lan.get_val("MONITOR_OBJECT_METRIC", monitor_object_name)
+                if not metric_map:
+                    metric_map = {}
+                result["display_name"] = metric_map.get("name") or result["name"]
+                result["display_description"] = metric_map.get("desc") or result["description"]
         return WebUtils.response_success(results)
 
     @swagger_auto_schema(

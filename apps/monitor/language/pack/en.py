@@ -23,76 +23,54 @@ MONITOR_OBJECT = {
 }
 
 MONITOR_OBJECT_PLUGIN = {
-    "Host": {
-        "Host General": {
-            "name": "Host",
-            "desc": "The host monitoring plugin is used to collect and analyze performance data of hosts, including CPU, memory, disk, and network usage."
-        },
-        "Host SNMP": {
-            "name": "Host（SNMP）",
-            "desc": "The SNMP plugin is used to monitor and manage the status of hosts through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
+    "Host General": {
+        "name": "Host",
+        "desc": "The host monitoring plugin is used to collect and analyze performance data of hosts, including CPU, memory, disk, and network usage."
     },
-    "Website": {
-        "Website General": {
-            "name": "Website",
-            "desc": "The purpose of the website monitoring HTTP plugin is to periodically check the availability and performance of HTTP/HTTPS connections."
-        }
+    "Host SNMP": {
+        "name": "Host（SNMP）",
+        "desc": "The SNMP plugin is used to monitor and manage the status of hosts through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
     },
-    "Cluster": {
-        "K8S General": {
-            "name": "K8S",
-            "desc": "The K8S monitoring plugin is used to monitor the status and health of Kubernetes clusters, including the performance metrics of nodes, containers, and pods."
-        }
+    "Website General": {
+        "name": "Website",
+        "desc": "The purpose of the website monitoring HTTP plugin is to periodically check the availability and performance of HTTP/HTTPS connections."
     },
-    "Switch": {
-        "Switch SNMP General": {
-            "name": "Switch General（SNMP）",
-            "desc": "The SNMP general plugin is used to monitor and manage the status of switches through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
+    "K8S General": {
+        "name": "K8S",
+        "desc": "The K8S monitoring plugin is used to monitor the status and health of Kubernetes clusters, including the performance metrics of nodes, containers, and pods."
     },
-    "Router": {
-        "Router SNMP General": {
-            "name": "Router General（SNMP）",
-            "desc": "The SNMP general plugin is used to monitor and manage the status of routers through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
+    "Switch SNMP General": {
+        "name": "Switch General（SNMP）",
+        "desc": "The SNMP general plugin is used to monitor and manage the status of switches through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
     },
-    "Loadbalance": {
-        "Loadbalance SNMP General": {
-            "name": "Loadbalance General（SNMP）",
-            "desc": "The SNMP general plugin is used to monitor and manage the status of loadbalances through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
+    "Router SNMP General": {
+        "name": "Router General（SNMP）",
+        "desc": "The SNMP general plugin is used to monitor and manage the status of routers through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
     },
-    "Firewall": {
-        "Firewall SNMP General": {
-            "name": "Firewall General（SNMP）",
-            "desc": "The SNMP general plugin is used to monitor and manage the status of firewalls through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
+    "Loadbalance SNMP General": {
+        "name": "Loadbalance General（SNMP）",
+        "desc": "The SNMP general plugin is used to monitor and manage the status of loadbalances through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
     },
-    "Detection Device": {
-        "Detection Device SNMP General": {
-            "name": "Detection Device General（SNMP）",
-            "desc": "The SNMP general plugin is used to monitor and manage the status of detection devices through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
+    "Firewall SNMP General": {
+        "name": "Firewall General（SNMP）",
+        "desc": "The SNMP general plugin is used to monitor and manage the status of firewalls through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
     },
-    "Bastion Host": {
-        "Bastion Host SNMP General": {
-            "name": "Bastion Host General（SNMP）",
-            "desc": "The SNMP general plugin is used to monitor and manage the status of bastion hosts through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
+    "Detection Device SNMP General": {
+        "name": "Detection Device General（SNMP）",
+        "desc": "The SNMP general plugin is used to monitor and manage the status of detection devices through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
     },
-    "Scanning Device": {
-        "Scanning Device SNMP General": {
-            "name": "Scanning Device General（SNMP）",
-            "desc": "The SNMP general plugin is used to monitor and manage the status of scanning devices through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
+    "Bastion Host SNMP General": {
+        "name": "Bastion Host General（SNMP）",
+        "desc": "The SNMP general plugin is used to monitor and manage the status of bastion hosts through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
     },
-    "Audit System": {
-        "Audit System SNMP General": {
-            "name": "Audit System General（SNMP）",
-            "desc": "The SNMP general plugin is used to monitor and manage the status of audit systems through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
-        }
-    }
+    "Scanning Device SNMP General": {
+        "name": "Scanning Device General（SNMP）",
+        "desc": "The SNMP general plugin is used to monitor and manage the status of scanning devices through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
+    },
+    "Audit System SNMP General": {
+        "name": "Audit System General（SNMP）",
+        "desc": "The SNMP general plugin is used to monitor and manage the status of audit systems through SNMP. Administrators can obtain key information about the device, such as interface traffic, error statistics, and status information, thereby optimizing network performance and improving management efficiency."
+    },
 }
 
 MONITOR_OBJECT_METRIC_GROUP = {
