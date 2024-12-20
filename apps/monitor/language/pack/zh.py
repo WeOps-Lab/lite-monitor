@@ -39,35 +39,35 @@ MONITOR_OBJECT_PLUGIN = {
         "name": "K8S",
         "desc": "K8S监控插件用于监控Kubernetes集群的状态和健康，包括节点、容器和pod的性能指标"
     },
-    "Switch SNMP": {
+    "Switch SNMP General": {
         "name": "交换机通用（SNMP）",
         "desc": "SNMP 通用插件用于通过 SNMP 监控和管理交换机的监控情况。管理员可以获取有关设备的关键信息，例如 接口流量、错误统计和状态信息等，从而优化网络性能和提高管理效率。"
     },
-    "Router SNMP": {
+    "Router SNMP General": {
         "name": "路由器通用（SNMP）",
         "desc": "SNMP 通用插件用于通过 SNMP 监控和管理路由器的监控情况。管理员可以获取有关设备的关键信息，例如 接口流量、错误统计和状态信息等，从而优化网络性能和提高管理效率。"
     },
-    "Loadbalance SNMP": {
+    "Loadbalance SNMP General": {
         "name": "负载均衡通用（SNMP）",
         "desc": "SNMP 通用插件用于通过 SNMP 监控和管理负载均衡的监控情况。管理员可以获取有关设备的关键信息，例如 接口流量、错误统计和状态信息等，从而优化网络性能和提高管理效率。"
     },
-    "Firewall SNMP": {
+    "Firewall SNMP General": {
         "name": "防火墙通用（SNMP）",
         "desc": "SNMP 通用插件用于通过 SNMP 监控和管理防火墙的监控情况。管理员可以获取有关设备的关键信息，例如 接口流量、错误统计和状态信息等，从而优化网络性能和提高管理效率。"
     },
-    "Detection Device SNMP": {
+    "Detection Device SNMP General": {
         "name": "检测设备通用（SNMP）",
         "desc": "SNMP 通用插件用于通过 SNMP 监控和管理检测设备的监控情况。管理员可以获取有关设备的关键信息，例如 接口流量、错误统计和状态信息等，从而优化网络性能和提高管理效率。"
     },
-    "Bastion Host SNMP": {
+    "Bastion Host SNMP General": {
         "name": "堡垒机通用（SNMP）",
         "desc": "SNMP 通用插件用于通过 SNMP 监控和管理堡垒机的监控情况。管理员可以获取有关设备的关键信息，例如 接口流量、错误统计和状态信息等，从而优化网络性能和提高管理效率。"
     },
-    "Scanning Device SNMP": {
+    "Scanning Device SNMP General": {
         "name": "扫描设备通用（SNMP）",
         "desc": "SNMP 通用插件用于通过 SNMP 监控和管理扫描设备的监控情况。管理员可以获取有关设备的关键信息，例如 接口流量、错误统计和状态信息等，从而优化网络性能和提高管理效率。"
     },
-    "Audit System SNMP": {
+    "Audit System SNMP General": {
         "name": "审计系统通用（SNMP）",
         "desc": "SNMP 通用插件用于通过 SNMP 监控和管理审计系统的监控情况。管理员可以获取有关设备的关键信息，例如 接口流量、错误统计和状态信息等，从而优化网络性能和提高管理效率。"
     },
@@ -81,7 +81,14 @@ MONITOR_OBJECT_METRIC_GROUP = {
         "SWAP": "SWAP",
         "MEMORY": "内存",
         "Net": "网络",
-        "UDP": "UDP"
+        "UDP": "UDP",
+        "Base": "基础",
+        "Status": "状态",
+        "Bandwidth": "带宽",
+        "Packet Error": "错包",
+        "Packet Loss": "丢包",
+        "Packet": "数据包",
+        "Traffic": "流量"
     },
     "Website": {
         "HTTP": "HTTP"
