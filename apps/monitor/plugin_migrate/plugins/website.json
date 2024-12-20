@@ -1,5 +1,5 @@
 {
-  "plugin": "Website Template",
+  "plugin": "Website General",
   "plugin_desc": "The purpose of the website monitoring plugin is to periodically check the availability and performance of HTTP/HTTPS connections.",
   "name": "Website",
   "type": "Web",
