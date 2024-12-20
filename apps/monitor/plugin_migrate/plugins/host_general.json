@@ -12,7 +12,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Current CPU usage percentage, representing the percentage of CPU that is currently in use. Calculated as the total time in user mode, system mode, interrupts, etc., divided by total time.",
-      "query": "100 * (1 - sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"idle\", labels__}[5m])) by (instance_id) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", __$labels__}[5m])) by (instance_id))",
+      "query": "100 * (1 - sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"idle\", __$labels__}[5m])) by (instance_id) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", __$labels__}[5m])) by (instance_id))",
       "dimensions": []
     },
     {
@@ -22,7 +22,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Current CPU idle percentage, representing the proportion of time the CPU is not performing any work.",
-      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"idle\", labels__}[5m])) by (instance_id) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", __$labels__}[5m])) by (instance_id))",
+      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"idle\", __$labels__}[5m])) by (instance_id) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", __$labels__}[5m])) by (instance_id))",
       "dimensions": []
     },
     {
