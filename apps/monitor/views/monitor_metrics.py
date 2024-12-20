@@ -30,7 +30,7 @@ class MetricGroupVieSet(viewsets.ModelViewSet):
         monitor_object_name = None
         for result in results:
             if monitor_object_name is None:
-                monitor_object = MonitorObject.objects.filter(id=result["monitor_object_id"]).first()
+                monitor_object = MonitorObject.objects.filter(id=result["monitor_object"]).first()
                 if monitor_object:
                     monitor_object_name = monitor_object.name
             if monitor_object_name:
@@ -120,7 +120,7 @@ class MetricVieSet(viewsets.ModelViewSet):
         monitor_object_name = None
         for result in results:
             if monitor_object_name is None:
-                monitor_object = MonitorObject.objects.filter(id=result["monitor_object_id"]).first()
+                monitor_object = MonitorObject.objects.filter(id=result["monitor_object"]).first()
                 if monitor_object:
                     monitor_object_name = monitor_object.name
             if monitor_object_name:

@@ -12,7 +12,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Current CPU usage percentage, representing the percentage of CPU that is currently in use. Calculated as the total time in user mode, system mode, interrupts, etc., divided by total time.",
-      "query": "100 * (1 - sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"idle\", labels__}[5m])) by (instance_id) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", __labels}[5m])) by (instance_id))",
+      "query": "100 * (1 - sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"idle\", labels__}[5m])) by (instance_id) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", __$labels__}[5m])) by (instance_id))",
       "dimensions": []
     },
     {
@@ -22,7 +22,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Current CPU idle percentage, representing the proportion of time the CPU is not performing any work.",
-      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"idle\", labels__}[5m])) by (instance_id) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", __labels}[5m])) by (instance_id))",
+      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"idle\", labels__}[5m])) by (instance_id) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", __$labels__}[5m])) by (instance_id))",
       "dimensions": []
     },
     {
@@ -32,7 +32,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Percentage of time the CPU is idle waiting for I/O operations to complete. Calculated as the time spent waiting for I/O divided by total time.",
-      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"iowait\",labels__}[5m])) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\",__labels}[5m])))",
+      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"iowait\",__$labels__}[5m])) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\",__$labels__}[5m])))",
       "dimensions": []
     },
     {
@@ -42,7 +42,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Percentage of CPU time spent in kernel mode (system tasks), reflecting the time the CPU spends processing system tasks.",
-      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"system\",labels__}[5m])) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\",__labels}[5m])))",
+      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"system\",__$labels__}[5m])) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\",__$labels__}[5m])))",
       "dimensions": []
     },
     {
@@ -52,7 +52,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Percentage of CPU time spent in user mode, reflecting the time the CPU spends running user programs.",
-      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"user\",labels__}[5m])) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\",__labels}[5m])))",
+      "query": "100 * (sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\", mode=\"user\",__$labels__}[5m])) / sum(rate(node_cpu_seconds_total_counter{instance_type=\"os\",__$labels__}[5m])))",
       "dimensions": []
     },
     {
@@ -62,7 +62,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Average system load over the last 1 minute, represented as the number of processes running and queued.",
-      "query": "sum(node_load1_gauge{instance_type=\"os\", labels__}) by (instance_id)",
+      "query": "sum(node_load1_gauge{instance_type=\"os\", __$labels__}) by (instance_id)",
       "dimensions": []
     },
     {
@@ -72,7 +72,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Average system load over the last 5 minutes, reflecting trends in overall system performance and load.",
-      "query": "sum(node_load5_gauge{instance_type=\"os\", __labels}) by (instance_id)",
+      "query": "sum(node_load5_gauge{instance_type=\"os\", __$labels__}) by (instance_id)",
       "dimensions": []
     },
     {
@@ -82,7 +82,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Average system load over the last 15 minutes, providing an overview of the long-term load state of the system.",
-      "query": "sum(node_load15_gauge{instance_type=\"os\", labels__}) by (instance_id)",
+      "query": "sum(node_load15_gauge{instance_type=\"os\", __$labels__}) by (instance_id)",
       "dimensions": []
     },
     {
@@ -92,7 +92,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of write operations per second on the disk, reflecting the frequency and performance of write operations.",
-      "query": "rate(node_disk_written_bytes_total_counter{instance_type=\"os\", __labels}[5m])",
+      "query": "rate(node_disk_written_bytes_total_counter{instance_type=\"os\", __$labels__}[5m])",
       "dimensions": [
         {
           "name": "device",
@@ -107,7 +107,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of read operations per second on the disk, reflecting the frequency and performance of read operations.",
-      "query": "rate(node_disk_reads_completed_total_counter{instance_type=\"os\", __labels}[5m])",
+      "query": "rate(node_disk_reads_completed_total_counter{instance_type=\"os\", __$labels__}[5m])",
       "dimensions": [
         {
           "name": "device",
@@ -122,7 +122,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Percentage of disk space used relative to total space, indicating the extent of storage utilization.",
-      "query": "100 * (1 - (sum(node_filesystem_free_bytes_gauge{instance_type=\"os\", __labels}) / sum(node_filesystem_size_bytes_gauge{instance_type=\"os\", labels__})))",
+      "query": "100 * (1 - (sum(node_filesystem_free_bytes_gauge{instance_type=\"os\", __$labels__}) / sum(node_filesystem_size_bytes_gauge{instance_type=\"os\", __$labels__})))",
       "dimensions": []
     },
     {
@@ -132,7 +132,7 @@
       "data_type": "Number",
       "unit": "gibibytes",
       "description": "Size of the disk space that is currently used, measured in bytes.",
-      "query": "(sum(node_filesystem_size_bytes_gauge{instance_type=\"os\", __labels}) - sum(node_filesystem_free_bytes_gauge{instance_type=\"os\", labels__}))/1024/1024/1024",
+      "query": "(sum(node_filesystem_size_bytes_gauge{instance_type=\"os\", __$labels__}) - sum(node_filesystem_free_bytes_gauge{instance_type=\"os\", __$labels__}))/1024/1024/1024",
       "dimensions": []
     },
     {
@@ -142,7 +142,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of all processes currently running in the system, reflecting the concurrent processing capacity of the system.",
-      "query": "node_procs_running_gauge{instance_type=\"os\", __labels} + node_procs_blocked_gauge{instance_type=\"os\", labels__}",
+      "query": "node_procs_running_gauge{instance_type=\"os\", __$labels__} + node_procs_blocked_gauge{instance_type=\"os\", __$labels__}",
       "dimensions": []
     },
     {
@@ -152,7 +152,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of currently active running processes, indicating the current load situation of the system.",
-      "query": "node_procs_running_gauge{instance_type=\"os\", __labels}",
+      "query": "node_procs_running_gauge{instance_type=\"os\", __$labels__}",
       "dimensions": []
     },
     {
@@ -162,7 +162,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of processes currently blocked waiting for I/O operations, indicating I/O performance bottlenecks in the system.",
-      "query": "node_procs_blocked_gauge{instance_type=\"os\", __labels}",
+      "query": "node_procs_blocked_gauge{instance_type=\"os\", __$labels__}",
       "dimensions": []
     },
     {
@@ -172,7 +172,7 @@
       "data_type": "Number",
       "unit": "tebibytes",
       "description": "Total physical memory installed on the current machine, measured in kilobytes (KB).",
-      "query": "node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __labels} / 1024 / 1024 / 1024",
+      "query": "node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -182,7 +182,7 @@
       "data_type": "Number",
       "unit": "tebibytes",
       "description": "Amount of free physical memory available on the current machine, measured in kilobytes (KB).",
-      "query": "node_memory_MemFree_bytes_gauge{instance_type=\"os\", __labels} / 1024 / 1024 / 1024",
+      "query": "node_memory_MemFree_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -192,7 +192,7 @@
       "data_type": "Number",
       "unit": "tebibytes",
       "description": "Amount of physical memory used for cache on the current machine, measured in kilobytes (KB).",
-      "query": "node_memory_Cached_bytes_gauge{instance_type=\"os\", __labels} / 1024 / 1024 / 1024",
+      "query": "node_memory_Cached_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -202,7 +202,7 @@
       "data_type": "Number",
       "unit": "tebibytes",
       "description": "Amount of physical memory used for buffers on the current machine, measured in kilobytes (KB).",
-      "query": "node_memory_Buffers_bytes_gauge{instance_type=\"os\", __labels} / 1024 / 1024 / 1024",
+      "query": "node_memory_Buffers_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -212,7 +212,7 @@
       "data_type": "Number",
       "unit": "tebibytes",
       "description": "Amount of physical memory available for applications to use on the current machine, measured in kilobytes (KB).",
-      "query": "node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __labels} / 1024 / 1024 / 1024",
+      "query": "node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -222,7 +222,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Percentage of total physical memory available for applications to use on the current machine.",
-      "query": "100 * (sum(node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", labels__}) by (instance_id) / sum(node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __labels}) by (instance_id))",
+      "query": "100 * (sum(node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __$labels__}) by (instance_id) / sum(node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__}) by (instance_id))",
       "dimensions": []
     },
     {
@@ -232,7 +232,7 @@
       "data_type": "Number",
       "unit": "tebibytes",
       "description": "Amount of physical memory used by applications on the current machine, measured in kilobytes (KB).",
-      "query": "((node_memory_MemTotal_bytes_gauge{instance_type=\"os\", labels__} - node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __labels}) / 1024 / 1024 / 1024)",
+      "query": "((node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__} - node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __$labels__}) / 1024 / 1024 / 1024)",
       "dimensions": []
     },
     {
@@ -242,7 +242,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Percentage of physical memory in use by applications on the current machine.",
-      "query": "(((node_memory_MemTotal_bytes_gauge{instance_type=\"os\", labels__} - node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __labels}) / node_memory_MemTotal_bytes_gauge{instance_type=\"os\", labels__}) * 100)",
+      "query": "(((node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__} - node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __$labels__}) / node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__}) * 100)",
       "dimensions": []
     },
     {
@@ -252,7 +252,7 @@
       "data_type": "Number",
       "unit": "tebibytes",
       "description": "Amount of physical memory that is currently in use, measured in kilobytes (KB).",
-      "query": "((node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __labels} - node_memory_MemFree_bytes_gauge{instance_type=\"os\", __labels}) / 1024 / 1024 / 1024)",
+      "query": "((node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__} - node_memory_MemFree_bytes_gauge{instance_type=\"os\", __$labels__}) / 1024 / 1024 / 1024)",
       "dimensions": []
     },
     {
@@ -262,7 +262,7 @@
       "data_type": "Number",
       "unit": "tebibytes",
       "description": "Amount of shared memory in use on the current machine, measured in kilobytes (KB).",
-      "query": "node_memory_Shmem_bytes_gauge{instance_type=\"os\", __labels} / 1024 / 1024 / 1024",
+      "query": "node_memory_Shmem_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -272,7 +272,7 @@
       "data_type": "Number",
       "unit": "gibibytes",
       "description": "Amount of free swap space currently available, measured in bytes.",
-      "query": "node_memory_SwapFree_bytes_gauge{instance_type=\"os\", __labels} / 1024 / 1024 / 1024",
+      "query": "node_memory_SwapFree_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -282,7 +282,7 @@
       "data_type": "Number",
       "unit": "gibibytes",
       "description": "Total size of swap space currently available, measured in bytes.",
-      "query": "node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __labels} / 1024 / 1024 / 1024",
+      "query": "node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -292,7 +292,7 @@
       "data_type": "Number",
       "unit": "gibibytes",
       "description": "Amount of swap space that is currently in use, measured in bytes.",
-      "query": "(node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __labels} - node_memory_SwapFree_bytes_gauge{instance_type=\"os\", __labels}) / 1024 / 1024 / 1024",
+      "query": "(node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __$labels__} - node_memory_SwapFree_bytes_gauge{instance_type=\"os\", __$labels__}) / 1024 / 1024 / 1024",
       "dimensions": []
     },
     {
@@ -302,7 +302,7 @@
       "data_type": "Number",
       "unit": "percent",
       "description": "Percentage of swap space that is currently in use relative to total swap space.",
-      "query": "((node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __labels} - node_memory_SwapFree_bytes_gauge{instance_type=\"os\", __labels}) / node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __labels} * 100)",
+      "query": "((node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __$labels__} - node_memory_SwapFree_bytes_gauge{instance_type=\"os\", __$labels__}) / node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __$labels__} * 100)",
       "dimensions": []
     },
     {
@@ -312,7 +312,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of packets received per second by the network interface card (NIC).",
-      "query": "node_network_receive_packets_total_counter{instance_type=\"os\", __labels}",
+      "query": "node_network_receive_packets_total_counter{instance_type=\"os\", __$labels__}",
       "dimensions": [
         {
           "name": "device",
@@ -327,7 +327,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of packets sent per second by the network interface card (NIC).",
-      "query": "node_network_transmit_packets_total_counter{instance_type=\"os\", __labels}",
+      "query": "node_network_transmit_packets_total_counter{instance_type=\"os\", __$labels__}",
       "dimensions": [
         {
           "name": "device",
@@ -342,7 +342,7 @@
       "data_type": "Number",
       "unit": "MBs",
       "description": "Number of bytes received per second by the network interface card (NIC).",
-      "query": "rate(node_network_receive_bytes_total_counter{instance_type=\"os\", __labels}[5m])/ 1024 / 1024",
+      "query": "rate(node_network_receive_bytes_total_counter{instance_type=\"os\", __$labels__}[5m])/ 1024 / 1024",
       "dimensions": [
         {
           "name": "device",
@@ -357,7 +357,7 @@
       "data_type": "Number",
       "unit": "MBs",
       "description": "Number of bytes sent per second by the network interface card (NIC).",
-      "query": "rate(node_network_transmit_bytes_total_counter{instance_type=\"os\", __labels}[5m])/ 1024 / 1024",
+      "query": "rate(node_network_transmit_bytes_total_counter{instance_type=\"os\", __$labels__}[5m])/ 1024 / 1024",
       "dimensions": [
         {
           "name": "device",
@@ -372,7 +372,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Total number of send or receive errors detected by the network card driver.",
-      "query": "node_network_receive_errs_total_counter{instance_type=\"os\", __labels}",
+      "query": "node_network_receive_errs_total_counter{instance_type=\"os\", __$labels__}",
       "dimensions": [
         {
           "name": "device",
@@ -387,7 +387,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Total number of packets dropped by the network card driver.",
-      "query": "node_network_receive_drop_total_counter{instance_type=\"os\", __labels}",
+      "query": "node_network_receive_drop_total_counter{instance_type=\"os\", __$labels__}",
       "dimensions": [
         {
           "name": "device",
@@ -402,7 +402,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Total number of collisions detected on the network card.",
-      "query": "node_network_transmit_colls_total_counter{instance_type=\"os\", __labels}",
+      "query": "node_network_transmit_colls_total_counter{instance_type=\"os\", __$labels__}",
       "dimensions": [
         {
           "name": "device",
@@ -417,7 +417,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of UDP datagrams received by the network interface.",
-      "query": "node_sockstat_UDP_inuse_gauge{instance_type=\"os\", labels__}",
+      "query": "node_sockstat_UDP_inuse_gauge{instance_type=\"os\", __$labels__}",
       "dimensions": []
     },
     {
@@ -427,7 +427,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of UDP datagrams sent by the network interface.",
-      "query": "node_sockstat_UDP_mem_gauge{instance_type=\"os\", labels__}",
+      "query": "node_sockstat_UDP_mem_gauge{instance_type=\"os\", __$labels__}",
       "dimensions": []
     }
   ]
