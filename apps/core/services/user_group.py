@@ -11,11 +11,9 @@ class UserGroup:
         users = self.keycloak_client.realm_client.get_users(query_params)
         return {"count": len(users), "users": users}
 
-    def goups_list(self, query_params):
+    def goups_list(self, search):
         """用户组列表"""
-        if query_params is None:
-            query_params = {"search": ""}
-        groups = self.keycloak_client.realm_client.get_groups(query_params)
+        groups = self.keycloak_client.realm_client.get_groups({"search": search})
         return groups
 
     def user_goups_list(self, token):
