@@ -40,6 +40,7 @@ class MonitorPolicy(TimeInfo, MaintainerInfo):
 
 class MonitorEvent(models.Model):
     LEVEL_CHOICES = [("no_data", "No Data"), ('info', 'Info'), ('warning', 'Warning'), ('error', 'Error'), ('critical', 'Critical')]
+    id = models.CharField(primary_key=True, max_length=50, verbose_name='事件ID')
     policy_id = models.IntegerField(db_index=True, verbose_name='监控策略ID')
     monitor_instance_id = models.CharField(db_index=True, max_length=100, verbose_name='监控对象实例ID')
 

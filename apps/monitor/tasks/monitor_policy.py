@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from celery.app import shared_task
 from datetime import datetime, timezone
@@ -217,6 +218,7 @@ class MonitorPolicyScan:
         """创建事件"""
         new_event_creates = [
             MonitorEvent(
+                id=uuid.uuid4().hex,
                 policy_id=self.policy.id,
                 monitor_instance_id=event["instance_id"],
                 value=event["value"],
