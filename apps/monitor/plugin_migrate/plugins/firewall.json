@@ -8,7 +8,7 @@
     {
       "metric_group": "Base",
       "name": "sysUpTime",
-      "query": "sum(cw_CommonNetwork_sysUpTime_gauge{__$labels__}) by (instance_id) / 60 / 60 / 24",
+      "query": "any(cw_CommonNetwork_sysUpTime_gauge{__$labels__}) by (instance_id) / 60 / 60 / 24 / 100",
       "display_name": "System Uptime",
       "unit": "d",
       "data_type": "Number",
