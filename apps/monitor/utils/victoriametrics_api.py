@@ -23,7 +23,7 @@ class VictoriaMetricsAPI:
         response.raise_for_status()
         return response.json()
 
-    def query_range(self, query, start, end, step):
+    def query_range(self, query, start, end, step="5m"):
         response = requests.get(
             f"{self.host}/api/v1/query_range",
             params={"query": query, "start": start, "end": end, "step": step},

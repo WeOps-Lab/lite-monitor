@@ -34,33 +34,33 @@ def scan_policy_task(policy_id):
     logger.info("end to update monitor instance grouping rule")
 
 
-def new_value(metric_query, range_time, group_by):
-    query = f"any(last_over_time({metric_query}[{range_time}])) by ({group_by})"
-    metrics = VictoriaMetricsAPI().query(query)
+def new_value(metric_query, start, end, step, group_by):
+    query = f"any(last_over_time({metric_query})) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query_range(query, start, end, step)
     return metrics
 
 
-def max_value(metric_query, range_time, group_by):
-    query = f"any(max_over_time({metric_query}[{range_time}])) by ({group_by})"
-    metrics = VictoriaMetricsAPI().query(query)
+def max_value(metric_query, start, end, step, group_by):
+    query = f"any(max_over_time({metric_query})) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query_range(query, start, end, step)
     return metrics
 
 
-def min_value(metric_query, range_time, group_by):
-    query = f"any(min_over_time({metric_query}[{range_time}])) by ({group_by})"
-    metrics = VictoriaMetricsAPI().query(query)
+def min_value(metric_query, start, end, step, group_by):
+    query = f"any(min_over_time({metric_query})) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query_range(query, start, end, step)
     return metrics
 
 
-def avg_value(metric_query, range_time, group_by):
-    query = f"any(avg_over_time({metric_query}[{range_time}])) by ({group_by})"
-    metrics = VictoriaMetricsAPI().query(query)
+def avg_value(metric_query, start, end, step, group_by):
+    query = f"any(avg_over_time({metric_query})) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query_range(query, start, end, step)
     return metrics
 
 
-def sum_value(metric_query, range_time, group_by):
-    query = f"any(sum_over_time({metric_query}[{range_time}])) by ({group_by})"
-    metrics = VictoriaMetricsAPI().query(query)
+def sum_value(metric_query, start, end, step, group_by):
+    query = f"any(sum_over_time({metric_query})) by ({group_by})"
+    metrics = VictoriaMetricsAPI().query_range(query, start, end, step)
     return metrics
 
 
@@ -134,6 +134,8 @@ class MonitorPolicyScan:
 
     def query_aggregration_metrics(self):
         """查询指标"""
+        end_timestamp = int(datetime.now(timezone.utc).timestamp())
+        start_timestamp = end_timestamp - self.policy.period
         query = self.policy.metric.query
         # 实例条件
         instances_str = "|".join(self.instances_map.keys())
@@ -146,12 +148,11 @@ class MonitorPolicyScan:
         if label_str.endswith(","):
             label_str = label_str[:-1]
         query = query.replace("__$labels__", label_str)
-
+        step = self.for_mat_period()
         method = METHOD.get(self.policy.algorithm)
-        range_time = self.for_mat_period()
         if not method:
             raise ValueError("invalid algorithm method")
-        return method(query, range_time, ",".join(self.policy.group_by))
+        return method(query, start_timestamp, end_timestamp, step, ",".join(self.policy.group_by))
 
     def set_monitor_obj_instance_key(self):
         """获取监控对象实例key"""
@@ -167,7 +168,8 @@ class MonitorPolicyScan:
         result = {}
         for metric_info in metrics.get("data", {}).get("result", []):
             instance_id = metric_info["metric"].get(self.instance_id_key)
-            result[instance_id] = float(metric_info["value"][1])
+            value = metric_info["values"][-1]
+            result[instance_id] = float(value[1])
         return result
 
     def compare_event(self, aggregation_result):
