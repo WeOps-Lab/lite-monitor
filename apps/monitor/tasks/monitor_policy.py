@@ -303,6 +303,8 @@ class MonitorPolicyScan:
                     alert.operator = "system"
                     recovery_alerts.append(alert)
             else:
+                if event_obj.level == "no_data":
+                    continue
                 # 正常告警恢复
                 if event_obj.level == "info":
                     events = MonitorEvent.objects.filter(
