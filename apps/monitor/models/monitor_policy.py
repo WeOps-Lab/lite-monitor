@@ -61,9 +61,7 @@ class MonitorAlert(TimeInfo):
     value = models.FloatField(blank=True, null=True, verbose_name='最高告警值')
     content = models.TextField(blank=True, verbose_name='告警内容')
     status = models.CharField(db_index=True, max_length=20, default="new", choices=STATUS_CHOICES, verbose_name='告警状态')
-    start_event_id = models.IntegerField(blank=True, null=True, verbose_name='开始事件ID')
     start_event_time = models.DateTimeField(blank=True, null=True, verbose_name='开始事件时间')
-    end_event_id = models.IntegerField(blank=True, null=True, verbose_name='结束事件ID')
     end_event_time = models.DateTimeField(blank=True, null=True, verbose_name='结束事件时间')
     operator = models.CharField(blank=True, null=True, max_length=50, verbose_name='告警处理人')
 

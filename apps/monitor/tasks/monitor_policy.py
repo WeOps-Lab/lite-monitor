@@ -297,7 +297,6 @@ class MonitorPolicyScan:
                 # 无数据告警恢复
                 if event_obj.level != "no_data":
                     alert.status = "recovered"
-                    alert.end_event_id = event_obj.id
                     alert.end_event_time = event_obj.created_at
                     alert.operator = "system"
                     recovery_alerts.append(alert)
@@ -310,7 +309,6 @@ class MonitorPolicyScan:
                     ).order_by("-created_at")[:self.policy.recovery_condition]
                     if all(event.level == "info" for event in events):
                         alert.status = "recovered"
-                        alert.end_event_id = event_obj.id
                         alert.end_event_time = event_obj.created_at
                         alert.operator = "system"
                         recovery_alerts.append(alert)
@@ -326,7 +324,7 @@ class MonitorPolicyScan:
         if alert_level_updates:
             MonitorAlert.objects.bulk_update(alert_level_updates, ["level", "value", "content"], batch_size=200)
         if recovery_alerts:
-            MonitorAlert.objects.bulk_update(recovery_alerts, ["status", "end_event_id", "end_event_time", "operator"], batch_size=200)
+            MonitorAlert.objects.bulk_update(recovery_alerts, ["status", "end_event_time", "operator"], batch_size=200)
 
     def create_alert(self, event_objs):
         """告警生成处理"""
@@ -351,7 +349,6 @@ class MonitorPolicyScan:
                 value=event_obj.value,
                 content=event_obj.content,
                 status="new",
-                start_event_id=event_obj.id,
                 start_event_time=event_obj.created_at,
                 operator="",
             )
@@ -374,7 +371,6 @@ class MonitorPolicyScan:
                         value=None,
                         content="no data",
                         status="new",
-                        start_event_id=event_obj.id,
                         start_event_time=event_obj.created_at,
                         operator="system",
                     )

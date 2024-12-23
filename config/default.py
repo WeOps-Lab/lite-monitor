@@ -214,7 +214,7 @@ TEMPLATES = [
 # 数据库配置
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": os.getenv("DB_ENGINE"),  # 替换为你的数据库引擎
         "NAME": os.getenv("DB_NAME"),  # 替换为你的数据库名称
         "USER": os.getenv("DB_USER"),  # 替换为你的数据库用户
         "PASSWORD": os.getenv("DB_PASSWORD"),  # 替换为你的数据库密码
@@ -223,8 +223,15 @@ DATABASES = {
     }
 }
 
-# DRF 配置
+if 'mysql' in DATABASES['default']['ENGINE']:
+    import pymysql
+    pymysql.install_as_MySQLdb()
 
+    DATABASES['default']['OPTIONS'] = {
+        'sql_mode': 'STRICT_TRANS_TABLES',  # 严格模式
+    }
+
+# DRF 配置
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         # "rest_framework.permissions.IsAuthenticated",
@@ -277,8 +284,8 @@ LOGGING = {
         "simple": {"format": "%(levelname)s %(message)s \n"},
         "verbose": {
             "format": "%(levelname)s [%(asctime)s] %(pathname)s "
-            "%(lineno)d %(funcName)s %(process)d %(thread)d "
-            "\n \t %(message)s \n",
+                      "%(lineno)d %(funcName)s %(process)d %(thread)d "
+                      "\n \t %(message)s \n",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },

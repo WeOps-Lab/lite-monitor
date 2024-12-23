@@ -41,10 +41,10 @@ class MonitorPluginService:
                 name=name,
             ) for name in new_groups_name
         ]
-        newer_groups = MetricGroup.objects.bulk_create(create_metric_group, batch_size=200)
+        MetricGroup.objects.bulk_create(create_metric_group, batch_size=200)
 
-        groups_map = {i.name: i.id for i in old_groups}
-        groups_map.update({i.name: i.id for i in newer_groups})
+        groups = MetricGroup.objects.filter(monitor_object=monitor_obj)
+        groups_map = {i.name: i.id for i in groups}
 
         metrics_to_update = []
         metrics_to_create = []
