@@ -132,10 +132,24 @@ class MonitorPolicyScan:
         else:
             raise ValueError(f"invalid period type: {self.policy.period['type']}")
 
+    def period_to_seconds(self):
+        """周期转换为秒"""
+        if not self.policy.period:
+            raise ValueError("policy period is empty")
+        if self.policy.period["type"] == "min":
+            return self.policy.period["value"] * 60
+        elif self.policy.period["type"] == "hour":
+            return self.policy.period["value"] * 3600
+        elif self.policy.period["type"] == "day":
+            return self.policy.period["value"] * 86400
+        else:
+            raise ValueError(f"invalid period type: {self.policy.period['type']}")
+
     def query_aggregration_metrics(self):
         """查询指标"""
         end_timestamp = int(datetime.now(timezone.utc).timestamp())
-        start_timestamp = end_timestamp - self.policy.period
+        period_seconds = self.period_to_seconds()
+        start_timestamp = end_timestamp - period_seconds
         query = self.policy.metric.query
         # 实例条件
         instances_str = "|".join(self.instances_map.keys())
