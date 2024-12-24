@@ -130,7 +130,7 @@
       "name": "disk.used",
       "display_name": "Disk Used Size",
       "data_type": "Number",
-      "unit": "gibibytes",
+      "unit": "gbytes",
       "description": "Size of the disk space that is currently used, measured in bytes.",
       "query": "(sum(node_filesystem_size_bytes_gauge{instance_type=\"os\", __$labels__}) - sum(node_filesystem_free_bytes_gauge{instance_type=\"os\", __$labels__}))/1024/1024/1024",
       "dimensions": []
@@ -170,7 +170,7 @@
       "name": "mem.total",
       "display_name": "Total Physical Memory Size",
       "data_type": "Number",
-      "unit": "tebibytes",
+      "unit": "tbytes",
       "description": "Total physical memory installed on the current machine, measured in kilobytes (KB).",
       "query": "node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
@@ -180,7 +180,7 @@
       "name": "mem.free",
       "display_name": "Free Physical Memory Amount",
       "data_type": "Number",
-      "unit": "tebibytes",
+      "unit": "tbytes",
       "description": "Amount of free physical memory available on the current machine, measured in kilobytes (KB).",
       "query": "node_memory_MemFree_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
@@ -190,7 +190,7 @@
       "name": "mem.cached",
       "display_name": "Cache Memory Size",
       "data_type": "Number",
-      "unit": "tebibytes",
+      "unit": "tbytes",
       "description": "Amount of physical memory used for cache on the current machine, measured in kilobytes (KB).",
       "query": "node_memory_Cached_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
@@ -200,7 +200,7 @@
       "name": "mem.buffer",
       "display_name": "Buffer Memory Size",
       "data_type": "Number",
-      "unit": "tebibytes",
+      "unit": "tbytes",
       "description": "Amount of physical memory used for buffers on the current machine, measured in kilobytes (KB).",
       "query": "node_memory_Buffers_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
@@ -210,7 +210,7 @@
       "name": "mem.usable",
       "display_name": "Available Memory for Applications",
       "data_type": "Number",
-      "unit": "tebibytes",
+      "unit": "tbytes",
       "description": "Amount of physical memory available for applications to use on the current machine, measured in kilobytes (KB).",
       "query": "node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
@@ -230,7 +230,7 @@
       "name": "mem.used",
       "display_name": "Memory Used by Applications",
       "data_type": "Number",
-      "unit": "tebibytes",
+      "unit": "tbytes",
       "description": "Amount of physical memory used by applications on the current machine, measured in kilobytes (KB).",
       "query": "((node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__} - node_memory_MemAvailable_bytes_gauge{instance_type=\"os\", __$labels__}) / 1024 / 1024 / 1024)",
       "dimensions": []
@@ -250,7 +250,7 @@
       "name": "mem.psc_used",
       "display_name": "Used Physical Memory Amount",
       "data_type": "Number",
-      "unit": "tebibytes",
+      "unit": "tbytes",
       "description": "Amount of physical memory that is currently in use, measured in kilobytes (KB).",
       "query": "((node_memory_MemTotal_bytes_gauge{instance_type=\"os\", __$labels__} - node_memory_MemFree_bytes_gauge{instance_type=\"os\", __$labels__}) / 1024 / 1024 / 1024)",
       "dimensions": []
@@ -260,7 +260,7 @@
       "name": "mem.shared",
       "display_name": "Shared Memory Usage",
       "data_type": "Number",
-      "unit": "tebibytes",
+      "unit": "tbytes",
       "description": "Amount of shared memory in use on the current machine, measured in kilobytes (KB).",
       "query": "node_memory_Shmem_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
@@ -270,7 +270,7 @@
       "name": "swap.free",
       "display_name": "SWAP Free Amount",
       "data_type": "Number",
-      "unit": "gibibytes",
+      "unit": "gbytes",
       "description": "Amount of free swap space currently available, measured in bytes.",
       "query": "node_memory_SwapFree_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
@@ -280,7 +280,7 @@
       "name": "swap.total",
       "display_name": "SWAP Total Amount",
       "data_type": "Number",
-      "unit": "gibibytes",
+      "unit": "gbytes",
       "description": "Total size of swap space currently available, measured in bytes.",
       "query": "node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __$labels__} / 1024 / 1024 / 1024",
       "dimensions": []
@@ -290,7 +290,7 @@
       "name": "swap.used",
       "display_name": "SWAP Used Amount",
       "data_type": "Number",
-      "unit": "gibibytes",
+      "unit": "gbytes",
       "description": "Amount of swap space that is currently in use, measured in bytes.",
       "query": "(node_memory_SwapTotal_bytes_gauge{instance_type=\"os\", __$labels__} - node_memory_SwapFree_bytes_gauge{instance_type=\"os\", __$labels__}) / 1024 / 1024 / 1024",
       "dimensions": []
@@ -312,7 +312,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of packets received per second by the network interface card (NIC).",
-      "query": "node_network_receive_packets_total_counter{instance_type=\"os\", __$labels__}",
+      "query": "rate(node_network_receive_packets_total_counter{instance_type=\"os\", __$labels__}[5m])",
       "dimensions": [
         {
           "name": "device",
@@ -327,7 +327,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Number of packets sent per second by the network interface card (NIC).",
-      "query": "node_network_transmit_packets_total_counter{instance_type=\"os\", __$labels__}",
+      "query": "rate(node_network_transmit_packets_total_counter{instance_type=\"os\", __$labels__}[5m])",
       "dimensions": [
         {
           "name": "device",
@@ -372,7 +372,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Total number of send or receive errors detected by the network card driver.",
-      "query": "node_network_receive_errs_total_counter{instance_type=\"os\", __$labels__}",
+      "query": "rate(node_network_receive_errs_total_counter{instance_type=\"os\", __$labels__}[5m])",
       "dimensions": [
         {
           "name": "device",
@@ -387,7 +387,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Total number of packets dropped by the network card driver.",
-      "query": "node_network_receive_drop_total_counter{instance_type=\"os\", __$labels__}",
+      "query": "rate(node_network_receive_drop_total_counter{instance_type=\"os\", __$labels__}[5m])",
       "dimensions": [
         {
           "name": "device",
@@ -402,7 +402,7 @@
       "data_type": "Number",
       "unit": "short",
       "description": "Total number of collisions detected on the network card.",
-      "query": "node_network_transmit_colls_total_counter{instance_type=\"os\", __$labels__}",
+      "query": "rate(node_network_transmit_colls_total_counter{instance_type=\"os\", __$labels__}[5m])",
       "dimensions": [
         {
           "name": "device",

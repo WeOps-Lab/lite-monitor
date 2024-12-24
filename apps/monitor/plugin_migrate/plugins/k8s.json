@@ -37,7 +37,7 @@
           "unit": "percent",
           "dimensions": [],
           "description": "Represents the current CPU utilization of the cluster, typically expressed as a percentage.",
-          "query": "sum(rate(prometheus_remote_write_container_cpu_usage_seconds_total{__$labels__}[5m])) / sum(prometheus_remote_write_kube_node_status_capacity{resource=\"cpu\",__$labels__}) * 100"
+          "query": "100 * (1 - sum(rate(prometheus_remote_write_node_cpu_seconds_total{instance_type=\"k8s\", mode=\"idle\",__$labels__}[5m])) / sum(rate(prometheus_remote_write_node_cpu_seconds_total{instance_type=\"k8s\",__$labels__}[5m])))"
         },
         {
           "metric_group": "Utilization",
@@ -47,7 +47,7 @@
           "unit": "percent",
           "dimensions": [],
           "description": "Shows the current memory utilization of the cluster, expressed as a percentage.",
-          "query": "sum(prometheus_remote_write_container_memory_usage_bytes{__$labels__}) / sum(prometheus_remote_write_kube_node_status_capacity{resource=\"memory\",__$labels__}) * 100"
+          "query": "100 * (sum(prometheus_remote_write_node_memory_MemAvailable_bytes{instance_type=\"k8s\",__$labels__}) by (instance_id) / sum(prometheus_remote_write_node_memory_MemTotal_bytes{instance_type=\"k8s\",__$labels__ }) by (instance_id))"
         }
       ]
     },
@@ -63,7 +63,7 @@
           "query": "sum(prometheus_remote_write_kube_pod_status_phase{phase=\"Running\",__$labels__}) by (pod)",
           "display_name": "Pod Status",
           "data_type": "Enum",
-          "unit": "[{\"name\":\"running\",\"id\":1},{\"name\":\"exception\",\"id\":0}]",
+          "unit": "[{\"name\":\"running\",\"id\":1},{\"name\":\"not running\",\"id\":0}]",
           "dimensions": [],
           "description": "Retrieves the current status of the Pod, such as Running, Stopped, etc."
         },
@@ -151,14 +151,14 @@
           "query": "sum(prometheus_remote_write_kube_node_status_condition{condition=\"Ready\",status=\"true\",__$labels__}) by (node)",
           "display_name": "Node Status",
           "data_type": "Enum",
-          "unit": "[{\"name\":\"true\",\"id\":1},{\"name\":\"false\",\"id\":0}]",
+          "unit": "[{\"name\":\"ready\",\"id\":1},{\"name\":\"not ready\",\"id\":0}]",
           "dimensions": [],
           "description": "Node Status indicates the current operational state of the node, such as “Running” or “Stopped.” It helps administrators monitor and manage nodes within the Kubernetes cluster."
         },
         {
           "metric_group": "CPU",
           "name": "node_cpu_utilization",
-          "query": "100 * (sum(rate(prometheus_remote_write_node_cpu_seconds_total{instance_type=\"k8s\", mode=\"idle\",__$labels__}[1m])) by (node) / sum(rate(prometheus_remote_write_node_cpu_seconds_total{instance_type=\"k8s\",__$labels__}[1m])) by (node))",
+          "query": "100 * (1 - sum(rate(prometheus_remote_write_node_cpu_seconds_total{instance_type=\"k8s\", mode=\"idle\",__$labels__}[5m])) by (node) / sum(rate(prometheus_remote_write_node_cpu_seconds_total{instance_type=\"k8s\", mode=\"idle\",__$labels__}[5m])) by (node))",
           "display_name": "CPU Utilization",
           "data_type": "Number",
           "unit": "percent",
@@ -208,10 +208,10 @@
         {
           "metric_group": "Disk",
           "name": "node_io_read",
-          "query": "rate(prometheus_remote_write_node_disk_written_bytes_total{instance_type=\"k8s\", __$labels__}[5m])",
+          "query": "rate(prometheus_remote_write_node_disk_written_bytes_total{instance_type=\"k8s\", __$labels__}[5m])/1024",
           "display_name": "Disk Write Rate",
           "data_type": "Number",
-          "unit": "short",
+          "unit": "KB/s",
           "dimensions": [
             {
               "name": "device",
@@ -223,10 +223,10 @@
         {
           "metric_group": "Disk",
           "name": "node_io_write",
-          "query": "rate(prometheus_remote_write_node_disk_reads_completed_total{instance_type=\"k8s\", __$labels__}[5m])",
+          "query": "rate(prometheus_remote_write_node_disk_reads_completed_total{instance_type=\"k8s\", __$labels__}[5m])/1024",
           "display_name": "Disk Read Rate",
           "data_type": "Number",
-          "unit": "short",
+          "unit": "KB/s",
           "dimensions": [
             {
               "name": "device",

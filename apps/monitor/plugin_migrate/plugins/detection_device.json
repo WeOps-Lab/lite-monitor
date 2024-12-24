@@ -48,9 +48,9 @@
     {
       "metric_group": "Bandwidth",
       "name": "ifHighSpeed",
-      "query": "cw_CommonNetwork_ifHighSpeed_gauge{__$labels__} / 1000",
+      "query": "cw_CommonNetwork_ifHighSpeed_gauge{__$labels__} ",
       "display_name": "Interface Bandwidth",
-      "unit": "KBs",
+      "unit": "Mbits",
       "data_type": "Number",
       "description": "This metric indicates the maximum data transmission speed supported by the network interface, usually measured in KB per second. Understanding the maximum speed of the interface helps administrators optimize traffic and utilize network resources effectively.",
       "dimensions": [
