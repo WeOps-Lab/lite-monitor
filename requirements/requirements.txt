@@ -21,7 +21,6 @@ eventlet==0.37.0
 django-celery-beat==2.5.0
 django-celery-results==2.5.0
 sqlalchemy==2.0.20
-kombu==5.4.2
 
 requests==2.31.0
 python-keycloak==3.7.0
