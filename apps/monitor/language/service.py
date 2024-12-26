@@ -1,8 +1,14 @@
+import os
+
+
 class SettingLanguage:
     def __init__(self, language: str):
         self.language_dict = self.get_language_dict(language)
 
     def get_language_dict(self, language: str):
+        default_language = os.getenv("DEFAULT_LANGUAGE")
+        if default_language:
+            language = default_language
         if language == "zh-Hans":
             from apps.monitor.language.pack.zh import LANGUAGE_DICT
         elif language == "en":
